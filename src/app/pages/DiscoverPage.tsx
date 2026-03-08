@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { HypeHeader } from "../components/HypeHeader";
 import { GenreFilter } from "../components/GenreFilter";
 import { ShowCard } from "../components/ShowCard";
+import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { AppLayout } from "../components/AppLayout";
 import { useShows } from "../context/ShowsContext";
 import { ChevronRight, Zap, Loader2 } from "lucide-react";
@@ -95,6 +96,9 @@ export function DiscoverPage() {
       </div>
 
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
+        {/* Featured Carousel — desktop only */}
+        <FeaturedCarousel shows={filteredShows} />
+
         {/* Trending Now */}
         {trendingShows.length > 0 && (
           <section className="mb-8">
