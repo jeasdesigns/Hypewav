@@ -1,86 +1,124 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { HypeHeader } from "../components/HypeHeader";
 import { GenreFilter } from "../components/GenreFilter";
 import { ShowCard } from "../components/ShowCard";
 import { AppLayout } from "../components/AppLayout";
-import { mockShows } from "../data/mockData";
-import { ChevronRight, Zap } from "lucide-react";
+import { useShows } from "../context/ShowsContext";
+import { ChevronRight, Zap, Loader2 } from "lucide-react";
 
 export function DiscoverPage() {
+  const { shows, loading, error } = useShows();
   const [selectedGenre, setSelectedGenre] = useState("All");
 
-  // Filter shows by genre
-  const filteredShows = selectedGenre === "All" 
-    ? mockShows 
-    : mockShows.filter(show => 
-        show.artist.genres.some(genre => 
-          genre.toLowerCase().includes(selectedGenre.toLowerCase())
+  // Build genre list dynamically from real data
+  const genres = useMemo(() => {
+    const all = new Set<string>();
+    shows.forEach(show =>
+      show.artist.genres.forEach(g => {
+        // Capitalize first letter of each word for display
+        const formatted = g
+          .split(' ')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+        all.add(formatted);
+      })
+    );
+    return ['All', ...Array.from(all).sort()];
+  }, [shows]);
+
+  // Filter shows by selected genre
+  const filteredShows = selectedGenre === 'All'
+    ? shows
+    : shows.filter(show =>
+        show.artist.genres.some(g =>
+          g.toLowerCase().includes(selectedGenre.toLowerCase())
         )
       );
 
-  // Group shows by time period
-  const today = new Date('2026-03-06');
-  const tomorrow = new Date('2026-03-07');
-  const weekEnd = new Date('2026-03-09');
+  // Group by time period relative to today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(today);
+  weekEnd.setDate(today.getDate() + 7);
+
+  const trendingShows = filteredShows
+    .filter(show => show.heatScore >= 75)
+    .slice(0, 3);
 
   const thisWeekShows = filteredShows.filter(show => {
-    const showDate = new Date(show.date);
-    return showDate >= today && showDate <= weekEnd;
+    const d = new Date(show.date + 'T00:00:00');
+    return d >= today && d < weekEnd;
   });
 
-  const nextWeekShows = filteredShows.filter(show => {
-    const showDate = new Date(show.date);
-    return showDate > weekEnd;
+  const laterShows = filteredShows.filter(show => {
+    const d = new Date(show.date + 'T00:00:00');
+    return d >= weekEnd;
   });
 
-  // Get featured shows (selling fast)
-  const featuredShows = filteredShows.filter(show => show.ticketStatus === 'selling-fast').slice(0, 3);
+  if (loading) {
+    return (
+      <AppLayout>
+        <HypeHeader />
+        <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+          <Loader2 className="w-10 h-10 text-[#A78BFA] animate-spin" />
+          <p className="text-[#9CA3AF] text-sm">Loading Seattle shows…</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout>
+        <HypeHeader />
+        <div className="flex flex-col items-center justify-center h-[60vh] gap-3 px-8 text-center">
+          <p className="text-xl font-bold text-[#F1F0FB]">Something went wrong</p>
+          <p className="text-[#9CA3AF] text-sm">{error}</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
       <HypeHeader />
-      
-      {/* Genre Filter Section */}
+
+      {/* Genre Filter */}
       <div className="py-4 border-b border-[#13121E]">
         <div className="px-4">
-          <GenreFilter 
-            selectedGenre={selectedGenre} 
-            onGenreChange={setSelectedGenre} 
+          <GenreFilter
+            selectedGenre={selectedGenre}
+            onGenreChange={setSelectedGenre}
+            genres={genres}
           />
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="px-4 pt-6 pb-24">
-        {/* Featured Shows Section - Only show if we have featured shows */}
-        {featuredShows.length > 0 && (
+        {/* Trending Now */}
+        {trendingShows.length > 0 && (
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-[#A78BFA]" />
-                <h2 className="text-xl font-bold text-[#F1F0FB]">
-                  TRENDING NOW
-                </h2>
+                <h2 className="text-xl font-bold text-[#F1F0FB]">TRENDING NOW</h2>
               </div>
             </div>
             <div className="space-y-4">
-              {featuredShows.map(show => (
+              {trendingShows.map(show => (
                 <ShowCard key={show.id} show={show} />
               ))}
             </div>
           </section>
         )}
 
-        {/* This Week Section */}
+        {/* This Week */}
         {thisWeekShows.length > 0 && (
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#F1F0FB]">
-                THIS WEEK
-              </h2>
+              <h2 className="text-xl font-bold text-[#F1F0FB]">THIS WEEK</h2>
               <button className="text-sm text-[#A78BFA] flex items-center gap-1 hover:gap-2 transition-[gap] duration-200">
-                See all
-                <ChevronRight className="w-4 h-4" />
+                See all <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             <div className="space-y-4">
@@ -91,20 +129,17 @@ export function DiscoverPage() {
           </section>
         )}
 
-        {/* Next Week Section */}
-        {nextWeekShows.length > 0 && (
+        {/* Coming Up */}
+        {laterShows.length > 0 && (
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#F1F0FB]">
-                NEXT WEEK
-              </h2>
+              <h2 className="text-xl font-bold text-[#F1F0FB]">COMING UP</h2>
               <button className="text-sm text-[#A78BFA] flex items-center gap-1 hover:gap-2 transition-[gap] duration-200">
-                See all
-                <ChevronRight className="w-4 h-4" />
+                See all <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             <div className="space-y-4">
-              {nextWeekShows.map(show => (
+              {laterShows.map(show => (
                 <ShowCard key={show.id} show={show} />
               ))}
             </div>
@@ -116,9 +151,7 @@ export function DiscoverPage() {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🎵</div>
             <h3 className="text-xl font-bold mb-2">No shows found</h3>
-            <p className="text-[#9CA3AF]">
-              Try selecting a different genre
-            </p>
+            <p className="text-[#9CA3AF]">Try selecting a different genre</p>
           </div>
         )}
       </main>

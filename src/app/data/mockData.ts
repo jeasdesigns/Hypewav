@@ -9,6 +9,11 @@ export interface Artist {
   bio: string;
   topTracks: Track[];
   spotifyUrl?: string;
+  spotifyId?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+  youtubeUrl?: string;
+  facebookUrl?: string;
 }
 
 export interface Track {
@@ -30,6 +35,7 @@ export interface Show {
   ticketStatus: 'available' | 'selling-fast' | 'sold-out' | 'free';
   image: string;
   description?: string;
+  ticketUrl?: string;
 }
 
 export interface Venue {
