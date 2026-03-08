@@ -17,14 +17,13 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
   const venueData = event._embedded?.venues?.[0];
   const artistName = attraction?.name ?? event.name;
 
-  const spotifyImage = spotify?.images?.[0]?.url;
-  const fallbackImage = tmImageUrl(event);
+  const tmImage = tmImageUrl(event);
 
   const artist: Artist = {
     id: spotify?.id ?? attraction?.id ?? artistName,
     spotifyId: spotify?.id,
     name: artistName,
-    image: spotifyImage ?? fallbackImage,
+    image: tmImage,
     genres: spotify?.genres ?? [],
     followers: spotify?.followers.total ?? 0,
     popularity: spotify?.popularity ?? 50,
@@ -70,7 +69,7 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
     heatScore: spotify?.popularity ?? 50,
     ticketPrice,
     ticketStatus: 'available',
-    image: spotifyImage ?? fallbackImage,
+    image: tmImage,
     ticketUrl: event.url,
   };
 }

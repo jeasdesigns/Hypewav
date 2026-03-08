@@ -33,13 +33,16 @@ export function ShowDetailPage() {
         if (event && !cancelled) {
           const artistName = event._embedded?.attractions?.[0]?.name ?? event.name;
           const spotify = await fetchArtistByName(artistName);
+          const tmImg = event.images?.find((i: any) => i.ratio === '16_9' && i.width >= 1024)?.url
+            ?? event.images?.find((i: any) => i.ratio === '16_9')?.url
+            ?? event.images?.[0]?.url ?? '';
           found = {
             id: event.id,
             artist: {
               id: spotify?.id ?? artistName,
               spotifyId: spotify?.id,
               name: artistName,
-              image: spotify?.images?.[0]?.url ?? event.images?.[0]?.url ?? '',
+              image: tmImg,
               genres: spotify?.genres ?? [],
               followers: spotify?.followers.total ?? 0,
               popularity: spotify?.popularity ?? 50,
@@ -64,7 +67,7 @@ export function ShowDetailPage() {
             heatScore: spotify?.popularity ?? 50,
             ticketPrice: event.priceRanges?.[0]?.min != null ? `$${Math.round(event.priceRanges[0].min)}` : 'TBD',
             ticketStatus: 'available',
-            image: spotify?.images?.[0]?.url ?? event.images?.[0]?.url ?? '',
+            image: tmImg,
             ticketUrl: event.url,
           };
         }
@@ -84,7 +87,7 @@ export function ShowDetailPage() {
               artist: {
                 ...found.artist,
                 spotifyId: spotify.id,
-                image: found.artist.image || spotify.images?.[0]?.url || '',
+                // Keep existing TM image — never overwrite with Spotify
                 genres: found.artist.genres.length ? found.artist.genres : spotify.genres,
                 followers: found.artist.followers || spotify.followers.total,
                 spotifyUrl: found.artist.spotifyUrl || spotify.external_urls.spotify,
