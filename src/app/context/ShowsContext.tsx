@@ -1,19 +1,36 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useSyncExternalStore, ReactNode } from 'react';
 import { Show, Artist, Venue, Track } from '../data/mockData';
 import { fetchSeattleShows, TMEvent } from '../services/ticketmasterService';
 import { fetchArtistByName, SpotifyArtist } from '../services/spotifyService';
 
-// ─── Module-level cache ────────────────────────────────────────────────────────
-// Lives outside React — survives component remounts and navigation.
-// First load populates it; every subsequent render reads from it instantly.
+// ─── Module-level store ────────────────────────────────────────────────────────
+// Lives completely outside React — survives unmounts, navigation, StrictMode.
+// Uses useSyncExternalStore for React 18 concurrent-mode safety (no tearing).
+
 let _shows: Show[] = [];
 let _loading = true;
 let _error: string | null = null;
 let _fetchStarted = false;
+let _fetchedAt = 0;
+const STALE_MS = 45 * 60 * 1000; // re-fetch after 45 minutes
+
+// Stable snapshot object — only replaced when state actually changes
+let _snapshot = { shows: _shows, loading: _loading, error: _error };
+
 const _listeners = new Set<() => void>();
 
 function notify() {
+  _snapshot = { shows: _shows, loading: _loading, error: _error };
   _listeners.forEach(fn => fn());
+}
+
+function subscribe(cb: () => void) {
+  _listeners.add(cb);
+  return () => _listeners.delete(cb);
+}
+
+function getSnapshot() {
+  return _snapshot;
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -80,10 +97,7 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
   };
 }
 
-async function fetchInBatches(
-  names: string[],
-  batchSize = 10
-): Promise<Map<string, SpotifyArtist | null>> {
+async function fetchInBatches(names: string[], batchSize = 10): Promise<Map<string, SpotifyArtist | null>> {
   const results = new Map<string, SpotifyArtist | null>();
   for (let i = 0; i < names.length; i += batchSize) {
     const batch = names.slice(i, i + batchSize);
@@ -95,17 +109,22 @@ async function fetchInBatches(
   return results;
 }
 
-// Single fetch — called once, results shared across all consumers
+// Fetches shows — re-fetches if data is stale (> 45 min old)
 async function loadShows() {
-  if (_fetchStarted) return;
+  const isStale = _fetchedAt > 0 && Date.now() - _fetchedAt > STALE_MS;
+  if (_fetchStarted && !isStale) return;
+
+  // Reset for re-fetch (keeps existing shows visible while refreshing)
   _fetchStarted = true;
+  _error = null;
 
   try {
     const events = await fetchSeattleShows();
 
-    // Phase 1: render TM data immediately
+    // Phase 1: show TM data immediately
     _shows = events.map(e => buildShow(e, null));
     _loading = false;
+    _fetchedAt = Date.now();
     notify();
 
     // Phase 2: enrich with Spotify in background
@@ -124,7 +143,7 @@ async function loadShows() {
   }
 }
 
-// ─── Context ───────────────────────────────────────────────────────────────────
+// ─── Context (thin wrapper — real state lives in the store above) ──────────────
 
 interface ShowsContextValue {
   shows: Show[];
@@ -132,30 +151,18 @@ interface ShowsContextValue {
   error: string | null;
 }
 
-const ShowsContext = createContext<ShowsContextValue>({
-  shows: _shows,
-  loading: _loading,
-  error: _error,
-});
+const ShowsContext = createContext<ShowsContextValue>(_snapshot);
 
 export function ShowsProvider({ children }: { children: ReactNode }) {
-  const [, forceRender] = useState(0);
+  // useSyncExternalStore ensures consistent reads in React 18 concurrent mode —
+  // prevents the "tearing" that causes blank pages on navigation
+  const value = useSyncExternalStore(subscribe, getSnapshot);
 
-  useEffect(() => {
-    // Subscribe to cache updates
-    const update = () => forceRender(n => n + 1);
-    _listeners.add(update);
-
-    // Kick off fetch if not already started
-    loadShows();
-
-    return () => {
-      _listeners.delete(update);
-    };
-  }, []);
+  // Kick off the fetch — idempotent, re-fetches automatically when stale
+  if (!_fetchStarted || (_fetchedAt > 0 && Date.now() - _fetchedAt > STALE_MS)) loadShows();
 
   return (
-    <ShowsContext.Provider value={{ shows: _shows, loading: _loading, error: _error }}>
+    <ShowsContext.Provider value={value}>
       {children}
     </ShowsContext.Provider>
   );

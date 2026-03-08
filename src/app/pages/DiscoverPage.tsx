@@ -64,6 +64,11 @@ export function DiscoverPage() {
     return d >= weekEnd;
   });
 
+  // Catch-all: shows that didn't fall into any date bucket (past or unparseable dates)
+  // Ensures content is ALWAYS visible when shows are loaded
+  const hasSections = trendingShows.length > 0 || thisWeekShows.length > 0 || laterShows.length > 0;
+  const fallbackShows = !hasSections ? filteredShows : [];
+
   return (
     <AppLayout>
       <HypeHeader />
@@ -146,6 +151,21 @@ export function DiscoverPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {laterShows.map(show => (
+                <ShowCard key={show.id} show={show} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Fallback: shows loaded but date sections all empty */}
+        {!loading && fallbackShows.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-5 h-5 text-[#A78BFA]" />
+              <h2 className="text-xl font-bold text-[#F1F0FB]">UPCOMING SHOWS</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {fallbackShows.map(show => (
                 <ShowCard key={show.id} show={show} />
               ))}
             </div>
