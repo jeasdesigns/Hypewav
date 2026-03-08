@@ -75,6 +75,27 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
   };
 }
 
+// Fetch in parallel with a concurrency limit
+async function fetchInBatches<T>(
+  items: string[],
+  fn: (name: string) => Promise<T>,
+  batchSize = 10
+): Promise<Map<string, T>> {
+  const results = new Map<string, T>();
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const settled = await Promise.allSettled(batch.map(name => fn(name)));
+    settled.forEach((result, idx) => {
+      if (result.status === 'fulfilled') {
+        results.set(batch[idx], result.value);
+      } else {
+        results.set(batch[idx], null as T);
+      }
+    });
+  }
+  return results;
+}
+
 interface ShowsContextValue {
   shows: Show[];
   loading: boolean;
@@ -100,28 +121,24 @@ export function ShowsProvider({ children }: { children: ReactNode }) {
         setLoading(true);
         setError(null);
 
+        // Step 1: Fetch Ticketmaster events — show immediately
         const events = await fetchSeattleShows();
         if (cancelled) return;
 
-        // Collect unique artist names
-        const names = [
-          ...new Set(
-            events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name)
-          ),
+        // Render shows right away with TM data (no Spotify yet)
+        const initialShows = events.map(event => buildShow(event, null));
+        setShows(initialShows);
+        setLoading(false); // ← App is visible now
+
+        // Step 2: Fetch Spotify data in parallel batches in the background
+        const uniqueNames = [
+          ...new Set(events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name)),
         ];
 
-        // Fetch Spotify data for each unique artist
-        const spotifyMap = new Map<string, SpotifyArtist | null>();
-        for (const name of names) {
-          if (cancelled) return;
-          const artist = await fetchArtistByName(name);
-          spotifyMap.set(name, artist);
-          // Small delay to avoid hammering the Worker
-          await new Promise(r => setTimeout(r, 60));
-        }
-
+        const spotifyMap = await fetchInBatches(uniqueNames, fetchArtistByName, 10);
         if (cancelled) return;
 
+        // Step 3: Re-render shows enriched with Spotify data
         const enriched = events.map(event => {
           const name = event._embedded?.attractions?.[0]?.name ?? event.name;
           return buildShow(event, spotifyMap.get(name) ?? null);
@@ -129,16 +146,15 @@ export function ShowsProvider({ children }: { children: ReactNode }) {
 
         setShows(enriched);
       } catch (err) {
-        if (!cancelled) setError('Failed to load shows. Please try again.');
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setError('Failed to load shows. Please try again.');
+          setLoading(false);
+        }
       }
     }
 
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return (
