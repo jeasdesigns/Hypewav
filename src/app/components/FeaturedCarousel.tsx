@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 import { Show } from '../data/mockData';
 
@@ -72,6 +72,8 @@ export function FeaturedCarousel({ shows }: FeaturedCarouselProps) {
 
   const total = shows.length;
 
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const advance = useCallback(() => {
     setActiveIndex(i => (i + 1) % total);
   }, [total]);
@@ -79,9 +81,12 @@ export function FeaturedCarousel({ shows }: FeaturedCarouselProps) {
   const goTo = (index: number) => {
     setActiveIndex(index);
     setPaused(true);
-    // Resume auto-rotate after 6s of inactivity
-    setTimeout(() => setPaused(false), 6000);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => setPaused(false), 6000);
   };
+
+  // Clean up resume timer on unmount
+  useEffect(() => () => { if (resumeTimer.current) clearTimeout(resumeTimer.current); }, []);
 
   // Auto-rotate every 4 seconds
   useEffect(() => {
@@ -113,6 +118,7 @@ export function FeaturedCarousel({ shows }: FeaturedCarouselProps) {
                 opacity,
                 zIndex: z,
                 transition: 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.55s ease',
+                willChange: 'transform, opacity',
               }}
             >
               <CarouselCard show={show} isCenter={isCenter} />

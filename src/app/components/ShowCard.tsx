@@ -14,7 +14,7 @@ export function ShowCard({ show }: ShowCardProps) {
   });
 
   return (
-    <Link to={`/show/${show.id}`} className="block group">
+    <Link to={`/show/${show.id}`} className="block group active:scale-[0.98] transition-transform duration-150">
       <div className="relative rounded-2xl overflow-hidden h-48 bg-gradient-to-b from-transparent to-[#09090F]">
         {/* Background Image */}
         <div className="absolute inset-0">

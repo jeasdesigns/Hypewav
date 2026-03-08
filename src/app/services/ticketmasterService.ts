@@ -49,23 +49,30 @@ export interface TMEvent {
 export async function fetchSeattleShows(): Promise<TMEvent[]> {
   const apiKey = import.meta.env.VITE_TICKETMASTER_API_KEY;
   const now = new Date();
-  const threeWeeksOut = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
+  const twoMonthsOut = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
 
   const params = new URLSearchParams({
     apikey: apiKey,
     city: 'Seattle',
     stateCode: 'WA',
     classificationName: 'music',
-    size: '50',
+    size: '100',
     sort: 'date,asc',
     startDateTime: now.toISOString().split('.')[0] + 'Z',
-    endDateTime: threeWeeksOut.toISOString().split('.')[0] + 'Z',
+    endDateTime: twoMonthsOut.toISOString().split('.')[0] + 'Z',
   });
 
-  const res = await fetch(`${TM_BASE}/events.json?${params}`);
-  if (!res.ok) throw new Error(`Ticketmaster error: ${res.status}`);
-  const data = await res.json();
-  return data._embedded?.events ?? [];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const res = await fetch(`${TM_BASE}/events.json?${params}`, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Ticketmaster error: ${res.status}`);
+    const data = await res.json();
+    return data._embedded?.events ?? [];
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function fetchEventById(id: string): Promise<TMEvent | null> {

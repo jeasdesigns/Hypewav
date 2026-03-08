@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink } from 'lucide-react';
 import { useShows } from '../context/ShowsContext';
@@ -17,6 +17,10 @@ export function ShowDetailPage() {
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Keep shows in a ref so the effect doesn't re-run on every Spotify enrichment pass
+  const showsRef = useRef(shows);
+  useEffect(() => { showsRef.current = shows; }, [shows]);
+
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -24,8 +28,8 @@ export function ShowDetailPage() {
     async function load() {
       setLoading(true);
 
-      // Try context first (fast path)
-      let found = shows.find(s => s.id === id) ?? null;
+      // Try context first (fast path) — use ref so Spotify enrichment doesn't retrigger
+      let found = showsRef.current.find(s => s.id === id) ?? null;
 
       // Fallback: fetch from Ticketmaster directly (e.g. deep link / direct URL)
       if (!found) {
@@ -107,7 +111,7 @@ export function ShowDetailPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [id, shows]);
+  }, [id]); // only re-run when the show id changes, not on every Spotify enrichment
 
   if (loading) {
     return (
@@ -428,7 +432,7 @@ export function ShowDetailPage() {
                   style={{ borderRadius: '12px' }}
                   src={`https://open.spotify.com/embed/artist/${show.artist.spotifyId}?utm_source=generator&theme=0`}
                   width="100%"
-                  height="352"
+                  height="500"
                   frameBorder="0"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="lazy"

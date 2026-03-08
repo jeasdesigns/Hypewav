@@ -5,7 +5,15 @@ import { ShowCard } from "../components/ShowCard";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { AppLayout } from "../components/AppLayout";
 import { useShows } from "../context/ShowsContext";
-import { ChevronRight, Zap, Loader2 } from "lucide-react";
+import { ChevronRight, Zap } from "lucide-react";
+
+function ShowCardSkeleton() {
+  return (
+    <div className="rounded-2xl overflow-hidden h-48 bg-[#13121E] animate-pulse">
+      <div className="w-full h-full bg-gradient-to-b from-[#1A1927] to-[#13121E]" />
+    </div>
+  );
+}
 
 export function DiscoverPage() {
   const { shows, loading, error } = useShows();
@@ -56,35 +64,11 @@ export function DiscoverPage() {
     return d >= weekEnd;
   });
 
-  if (loading) {
-    return (
-      <AppLayout>
-        <HypeHeader />
-        <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-          <Loader2 className="w-10 h-10 text-[#A78BFA] animate-spin" />
-          <p className="text-[#9CA3AF] text-sm">Loading Seattle shows…</p>
-        </div>
-      </AppLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <AppLayout>
-        <HypeHeader />
-        <div className="flex flex-col items-center justify-center h-[60vh] gap-3 px-8 text-center">
-          <p className="text-xl font-bold text-[#F1F0FB]">Something went wrong</p>
-          <p className="text-[#9CA3AF] text-sm">{error}</p>
-        </div>
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout>
       <HypeHeader />
 
-      {/* Genre Filter */}
+      {/* Genre Filter — always visible, even while loading */}
       <div className="py-4 border-b border-[#13121E]">
         <div className="px-4">
           <GenreFilter
@@ -95,7 +79,25 @@ export function DiscoverPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="flex flex-col items-center justify-center h-[60vh] gap-3 px-8 text-center">
+          <p className="text-xl font-bold text-[#F1F0FB]">Something went wrong</p>
+          <p className="text-[#9CA3AF] text-sm">{error}</p>
+        </div>
+      )}
+
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
+        {loading && (
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-5 h-5 text-[#A78BFA]" />
+              <h2 className="text-xl font-bold text-[#F1F0FB]">TRENDING NOW</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[0, 1, 2].map(i => <ShowCardSkeleton key={i} />)}
+            </div>
+          </section>
+        )}
         {/* Featured Carousel — desktop only */}
         <FeaturedCarousel shows={filteredShows} />
 
@@ -150,8 +152,8 @@ export function DiscoverPage() {
           </section>
         )}
 
-        {/* Empty State */}
-        {filteredShows.length === 0 && (
+        {/* Empty State — only after load completes */}
+        {!loading && filteredShows.length === 0 && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🎵</div>
             <h3 className="text-xl font-bold mb-2">No shows found</h3>
