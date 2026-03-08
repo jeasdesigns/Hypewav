@@ -136,7 +136,6 @@
 
   body {
     @apply bg-background text-foreground;
-    overflow: hidden; /* Prevent body scroll, only allow container scroll */
   }
 
   /**
@@ -146,7 +145,6 @@
 
   html {
     font-size: var(--font-size);
-    overflow: hidden; /* Prevent html scroll */
   }
 
   h1 {
