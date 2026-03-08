@@ -171,3 +171,13 @@ export function ShowsProvider({ children }: { children: ReactNode }) {
 export function useShows() {
   return useContext(ShowsContext);
 }
+
+// Force a fresh fetch — call this from a "refresh" button
+export function refreshShows() {
+  _fetchedAt = 0;
+  _fetchStarted = false;
+  _loading = true;
+  _error = null;
+  notify();
+  loadShows();
+}
