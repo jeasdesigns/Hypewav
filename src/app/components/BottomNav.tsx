@@ -12,7 +12,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="sticky bottom-0 left-0 right-0 bg-[#09090F]/95 backdrop-blur-xl border-t border-[#13121E] z-50 mt-auto">
+    <nav className="sticky bottom-0 left-0 right-0 bg-[#09090F]/95 backdrop-blur-xl border-t border-[#13121E] z-50 mt-auto lg:hidden">
       <div className="max-w-md mx-auto px-4">
         <div className="flex justify-around items-center h-20 pb-6">
           {navItems.map(({ path, icon: Icon, label }) => {

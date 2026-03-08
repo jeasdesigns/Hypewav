@@ -9,22 +9,18 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, showBottomNav = true, floatingAction }: AppLayoutProps) {
   return (
-    <div className="relative flex flex-col h-full bg-[#09090F] text-[#F1F0FB]">
-      {/* Content Area - No scroll here, parent MobileFrame handles it */}
-      <div className="flex-1 pb-20">
+    <div className="relative flex flex-col min-h-screen bg-[#09090F] text-[#F1F0FB]">
+      <div className="flex-1 pb-20 lg:pb-0">
         {children}
       </div>
-      
-      {/* Floating Action Button - Positioned above Bottom Nav */}
+
       {floatingAction && (
-        <div className="absolute bottom-[200px] left-0 right-0 px-4 z-[60] pointer-events-none">
-          <div className="pointer-events-auto">
-            {floatingAction}
-          </div>
+        <div className="absolute bottom-[200px] left-0 right-0 px-4 z-[60] pointer-events-none lg:hidden">
+          <div className="pointer-events-auto">{floatingAction}</div>
         </div>
       )}
-      
-      {/* Fixed Bottom Navigation */}
+
+      {/* Bottom nav — mobile only */}
       {showBottomNav && <BottomNav />}
     </div>
   );

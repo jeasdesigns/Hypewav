@@ -94,7 +94,7 @@ export function DiscoverPage() {
         </div>
       </div>
 
-      <main className="px-4 pt-6 pb-24">
+      <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
         {/* Trending Now */}
         {trendingShows.length > 0 && (
           <section className="mb-8">
@@ -104,7 +104,7 @@ export function DiscoverPage() {
                 <h2 className="text-xl font-bold text-[#F1F0FB]">TRENDING NOW</h2>
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {trendingShows.map(show => (
                 <ShowCard key={show.id} show={show} />
               ))}
@@ -121,7 +121,7 @@ export function DiscoverPage() {
                 See all <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {thisWeekShows.map(show => (
                 <ShowCard key={show.id} show={show} />
               ))}
@@ -138,7 +138,7 @@ export function DiscoverPage() {
                 See all <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {laterShows.map(show => (
                 <ShowCard key={show.id} show={show} />
               ))}

@@ -8,7 +8,7 @@ interface HypeHeaderProps {
 export function HypeHeader({ onFilterClick }: HypeHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-[#13121E] bg-[#09090F]/95 backdrop-blur-md">
-      <div className="max-w-md mx-auto px-6 pt-4 pb-3">
+      <div className="px-6 pt-4 pb-3 max-w-6xl mx-auto lg:max-w-none">
         <div className="flex items-center justify-between mb-3">
           <Link to="/" className="flex-1">
             <div className="text-xs text-[#9CA3AF] tracking-wide font-medium mb-0.5">
