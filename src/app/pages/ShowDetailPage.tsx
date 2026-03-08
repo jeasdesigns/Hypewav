@@ -72,10 +72,31 @@ export function ShowDetailPage() {
 
       if (!cancelled) setShow(found);
 
-      // Fetch top tracks if we have a Spotify ID
-      if (found?.artist.spotifyId && found.artist.name) {
-        const tracks = await fetchTopTracks(found.artist.name, found.artist.spotifyId);
-        if (!cancelled) setTopTracks(tracks);
+      // Fetch top tracks — if no spotifyId yet, try fetching artist first to get it
+      if (found?.artist.name) {
+        let spotifyId = found.artist.spotifyId;
+        if (!spotifyId) {
+          const spotify = await fetchArtistByName(found.artist.name);
+          spotifyId = spotify?.id;
+          if (spotify && found) {
+            found = {
+              ...found,
+              artist: {
+                ...found.artist,
+                spotifyId: spotify.id,
+                image: found.artist.image || spotify.images?.[0]?.url || '',
+                genres: found.artist.genres.length ? found.artist.genres : spotify.genres,
+                followers: found.artist.followers || spotify.followers.total,
+                spotifyUrl: found.artist.spotifyUrl || spotify.external_urls.spotify,
+              },
+            };
+            if (!cancelled) setShow(found);
+          }
+        }
+        if (spotifyId) {
+          const tracks = await fetchTopTracks(found.artist.name, spotifyId);
+          if (!cancelled) setTopTracks(tracks);
+        }
       }
 
       if (!cancelled) setLoading(false);
@@ -273,11 +294,27 @@ export function ShowDetailPage() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(show.venue.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 p-4 bg-[#09090F] border border-[#13121E] rounded-lg hover:border-[#67E8F9]/50 transition-colors group"
+                className="block relative h-36 rounded-lg overflow-hidden group"
               >
-                <MapPin className="w-5 h-5 text-[#67E8F9] opacity-60 group-hover:opacity-100 transition-opacity" />
-                <div className="text-sm text-[#67E8F9] font-medium group-hover:underline">
-                  View on Google Maps →
+                <img
+                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(show.venue.address)}&zoom=15&size=600x200&scale=2&markers=color:0xA78BFA|${encodeURIComponent(show.venue.address)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&style=feature:all|element:geometry|color:0x09090F&style=feature:all|element:labels.text.fill|color:0x9CA3AF&style=feature:all|element:labels.text.stroke|color:0x09090F&style=feature:road|element:geometry|color:0x13121E&style=feature:road.arterial|element:geometry|color:0x1A1927&style=feature:water|element:geometry|color:0x0a0a18&style=feature:poi|element:geometry|color:0x13121E`}
+                  alt={`Map of ${show.venue.name}`}
+                  className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+                  onError={e => {
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                {/* Fallback */}
+                <div className="hidden absolute inset-0 bg-[#09090F] flex flex-col items-center justify-center border border-[#13121E] group-hover:border-[#67E8F9]/50 transition-colors">
+                  <MapPin className="w-8 h-8 mb-2 text-[#67E8F9] opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <div className="text-xs text-[#67E8F9] font-medium">View on Map →</div>
+                </div>
+                {/* Overlay label */}
+                <div className="absolute bottom-2 right-2 bg-[#09090F]/80 backdrop-blur-sm px-2 py-1 rounded text-xs text-[#67E8F9] flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  Open in Maps
                 </div>
               </a>
             </div>
