@@ -32,7 +32,10 @@ let tokenExpiresAt = 0;
 async function getToken(): Promise<string | null> {
   if (cachedToken && Date.now() < tokenExpiresAt) return cachedToken;
   try {
-    const res = await fetch(`${WORKER_BASE}/api/token`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(`${WORKER_BASE}/api/token`, { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) return null;
     const data = await res.json();
     cachedToken = data.access_token ?? null;

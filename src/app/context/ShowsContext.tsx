@@ -123,7 +123,8 @@ async function loadShows() {
     notify();
 
     const names = [...new Set(events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name))];
-    const spotifyMap = await fetchInBatches(names, 10);
+    // 30 shows = ~30 unique artists — run all in one parallel batch
+    const spotifyMap = await fetchInBatches(names, 30);
 
     _shows = events.map(e => {
       const name = e._embedded?.attractions?.[0]?.name ?? e.name;

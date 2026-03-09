@@ -56,7 +56,7 @@ export async function fetchSeattleShows(): Promise<TMEvent[]> {
     city: 'Seattle',
     stateCode: 'WA',
     classificationName: 'music',
-    size: '100',
+    size: '30',
     sort: 'date,asc',
     startDateTime: now.toISOString().split('.')[0] + 'Z',
     endDateTime: twoMonthsOut.toISOString().split('.')[0] + 'Z',
