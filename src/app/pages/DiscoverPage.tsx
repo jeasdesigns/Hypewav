@@ -156,6 +156,7 @@ function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: 
 
 export function DiscoverPage() {
   const { shows, loading, error, refresh } = useShows();
+  console.log('[DiscoverPage] render shows=', shows.length, 'loading=', loading, 'error=', error);
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   const genres = useMemo(() => {
@@ -203,8 +204,8 @@ export function DiscoverPage() {
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 
         {/* DEBUG — remove after diagnosis */}
-        <div className="text-xs text-[#9CA3AF] bg-[#13121E] px-3 py-2 rounded mb-4 font-mono">
-          shows={shows.length} loading={String(loading)} error={error ?? 'none'} hasShows={String(hasShows)} hasFiltered={String(hasFiltered)} genre="{selectedGenre}"
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'red', color: 'white', padding: '8px', fontSize: '12px', fontFamily: 'monospace' }}>
+          DEBUG: shows={shows.length} loading={String(loading)} error={error ?? 'none'} hasShows={String(hasShows)} hasFiltered={String(hasFiltered)} genre="{selectedGenre}"
         </div>
 
         {/* Loading skeleton — only when no data yet */}
