@@ -8,6 +8,9 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
 import { ChevronRight, Zap, RefreshCw } from "lucide-react";
+import { normalizeGenre } from "../utils/genres";
+
+// ─── Skeletons / helpers ───────────────────────────────────────────────────────
 
 function ShowCardSkeleton() {
   return (
@@ -29,7 +32,7 @@ function RefreshButton({ onRefresh }: { onRefresh: () => void }) {
   );
 }
 
-// ─── Section logic extracted, wrapped in ErrorBoundary ────────────────────────
+// ─── Section logic ─────────────────────────────────────────────────────────────
 
 function ShowSections({ shows }: { shows: Show[] }) {
   const today = new Date();
@@ -68,7 +71,6 @@ function ShowSections({ shows }: { shows: Show[] }) {
   ]);
   const remaining = shows.filter(s => !bucketed.has(s.id));
 
-  // If nothing was bucketed, show everything under one heading
   if (trending.length === 0 && thisWeek.length === 0 && later.length === 0) {
     return (
       <section className="mb-8">
@@ -139,7 +141,7 @@ function ShowSections({ shows }: { shows: Show[] }) {
   );
 }
 
-// ─── Main content — wrapped so ErrorBoundary covers carousel + sections ───────
+// ─── Main content ──────────────────────────────────────────────────────────────
 
 function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: Show[] }) {
   return (
@@ -156,25 +158,27 @@ export function DiscoverPage() {
   const { shows, loading, error, refresh } = useShows();
   const [selectedGenre, setSelectedGenre] = useState("All");
 
+  // Normalize raw Spotify genres → broad categories; deduplicate
   const genres = useMemo(() => {
-    const all = new Set<string>();
+    const categories = new Set<string>();
     shows.forEach(show => {
       if (!Array.isArray(show?.artist?.genres)) return;
       show.artist.genres.forEach(g => {
         if (typeof g !== 'string') return;
-        const formatted = g.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        all.add(formatted);
+        const label = normalizeGenre(g);
+        if (label) categories.add(label);
       });
     });
-    return ['All', ...Array.from(all).sort()];
+    return ['All', ...Array.from(categories).sort()];
   }, [shows]);
 
+  // Filter by broad category — match any raw genre that normalizes to selectedGenre
   const filteredShows = useMemo(() => {
     if (selectedGenre === 'All') return shows;
     return shows.filter(show =>
       Array.isArray(show?.artist?.genres) &&
       show.artist.genres.some(g =>
-        typeof g === 'string' && g.toLowerCase().includes(selectedGenre.toLowerCase())
+        typeof g === 'string' && normalizeGenre(g) === selectedGenre
       )
     );
   }, [shows, selectedGenre]);
@@ -188,7 +192,8 @@ export function DiscoverPage() {
         <HypeHeader />
       </div>
 
-      <div className="py-4 border-b border-[#13121E] overflow-x-hidden">
+      {/* Genre filter — isolated scroll container, no negative margins */}
+      <div className="py-4 border-b border-[#13121E]">
         <div className="px-4">
           <GenreFilter
             selectedGenre={selectedGenre}
@@ -200,7 +205,6 @@ export function DiscoverPage() {
 
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 
-        {/* Loading skeleton — only when no data yet */}
         {!hasShows && loading && (
           <section className="mb-8">
             <div className="flex items-center gap-2 mb-4">
@@ -213,7 +217,6 @@ export function DiscoverPage() {
           </section>
         )}
 
-        {/* Error with no data */}
         {!hasShows && !loading && error && (
           <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
             <h3 className="text-xl font-bold text-[#F1F0FB] mb-2">Couldn't load shows</h3>
@@ -222,7 +225,6 @@ export function DiscoverPage() {
           </div>
         )}
 
-        {/* No shows and not loading */}
         {!hasShows && !loading && !error && (
           <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
             <div className="w-16 h-16 rounded-full bg-[#13121E] flex items-center justify-center mb-2">
@@ -234,14 +236,12 @@ export function DiscoverPage() {
           </div>
         )}
 
-        {/* Shows available — render regardless of loading (Spotify enrichment is in background) */}
         {hasShows && hasFiltered && (
           <ErrorBoundary>
             <ShowsContent shows={shows} filteredShows={filteredShows} />
           </ErrorBoundary>
         )}
 
-        {/* Genre filter returned no results */}
         {hasShows && !hasFiltered && (
           <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
             <div className="w-16 h-16 rounded-full bg-[#13121E] flex items-center justify-center mb-2">
