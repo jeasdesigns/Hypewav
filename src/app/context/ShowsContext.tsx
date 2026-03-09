@@ -161,8 +161,7 @@ export function ShowsProvider({ children }: { children: ReactNode }) {
 
         _cache = enriched;
         _cacheTime = Date.now();
-        // TEST: skip Phase 2 setShows to confirm enrichment causes blank
-        // setShows(enriched);
+        setShows(enriched);
       } catch {
         if (dead) return;
         setLoading(false);

@@ -29,7 +29,7 @@ export function ShowCard({ show }: ShowCardProps) {
 
         {/* Genre Badge - Top Left */}
         {show.artist?.genres?.[0] && (
-          <div className="absolute top-3 left-3 bg-[#A78BFA]/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-[#09090F] shadow-lg">
+          <div className="absolute top-3 left-3 bg-[#A78BFA] px-3 py-1.5 rounded-full text-xs font-medium text-[#09090F] shadow-lg">
             {show.artist.genres[0]}
           </div>
         )}
