@@ -202,10 +202,9 @@ export function DiscoverPage() {
         {!loading && !error && filteredShows.length > 0 && (
           <ErrorBoundary
             fallback={
-              <EmptyState
-                message="Something went wrong displaying shows"
-                sub="Hit refresh to reload the lineup."
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredShows.map(show => <ShowCard key={show.id} show={show} />)}
+              </div>
             }
           >
             <ShowsContent shows={shows} filteredShows={filteredShows} />

@@ -1,9 +1,15 @@
-import { useEffect, useSyncExternalStore, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { Show, Artist, Venue, Track } from '../data/mockData';
 import { fetchSeattleShows, TMEvent } from '../services/ticketmasterService';
 import { fetchArtistByName, SpotifyArtist } from '../services/spotifyService';
 
 // ─── Module-level store ────────────────────────────────────────────────────────
+
+interface ShowsSnapshot {
+  shows: Show[];
+  loading: boolean;
+  error: string | null;
+}
 
 let _shows: Show[] = [];
 let _loading = true;
@@ -12,22 +18,14 @@ let _fetchStarted = false;
 let _fetchedAt = 0;
 const STALE_MS = 45 * 60 * 1000;
 
-let _snapshot = { shows: _shows, loading: _loading, error: _error };
-
 const _listeners = new Set<() => void>();
 
 function notify() {
-  _snapshot = { shows: _shows, loading: _loading, error: _error };
   _listeners.forEach(fn => fn());
 }
 
-export function subscribe(cb: () => void) {
-  _listeners.add(cb);
-  return () => _listeners.delete(cb);
-}
-
-export function getSnapshot() {
-  return _snapshot;
+function getSnapshot(): ShowsSnapshot {
+  return { shows: _shows, loading: _loading, error: _error };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,7 +121,6 @@ async function loadShows() {
     notify();
 
     const names = [...new Set(events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name))];
-    // 30 shows = ~30 unique artists — run all in one parallel batch
     const spotifyMap = await fetchInBatches(names, 30);
 
     _shows = events.map(e => {
@@ -138,15 +135,27 @@ async function loadShows() {
   }
 }
 
-// ─── Hook — reads directly from store, NO context layer ──────────────────────
-// Using useSyncExternalStore directly eliminates any context propagation lag
-// that could cause stale reads during concurrent React rendering.
+// ─── Hook — subscribes to the module-level store via useState ────────────────
+// Using useState + useEffect avoids React 18 concurrent mode edge cases with
+// useSyncExternalStore where snapshot reads can silently produce stale renders
+// on navigation.
 
 export function useShows() {
-  return useSyncExternalStore(subscribe, getSnapshot);
+  const [snap, setSnap] = useState<ShowsSnapshot>(getSnapshot);
+
+  useEffect(() => {
+    // Re-sync immediately: state may have changed between the render and this effect
+    setSnap(getSnapshot());
+
+    const unsub = () => setSnap(getSnapshot());
+    _listeners.add(unsub);
+    return () => { _listeners.delete(unsub); };
+  }, []);
+
+  return snap;
 }
 
-// ─── Provider — just kicks off the fetch, no Context needed ──────────────────
+// ─── Provider — kicks off the fetch, stable at App root ──────────────────────
 
 export function ShowsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
