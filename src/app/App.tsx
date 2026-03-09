@@ -1,13 +1,8 @@
 import { RouterProvider } from 'react-router';
 import { router } from './routes';
-import { ShowsProvider } from './context/ShowsContext';
 
 function App() {
-  return (
-    <ShowsProvider>
-      <RouterProvider router={router} />
-    </ShowsProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -1,11 +1,11 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Show, Artist, Venue, Track } from '../data/mockData';
 import { fetchSeattleShows, TMEvent } from '../services/ticketmasterService';
 import { fetchArtistByName, SpotifyArtist } from '../services/spotifyService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ShowsState {
+export interface ShowsCtx {
   shows: Show[];
   loading: boolean;
   error: string | null;
@@ -14,21 +14,21 @@ interface ShowsState {
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
-const ShowsContext = createContext<ShowsState>({
+const ShowsContext = createContext<ShowsCtx>({
   shows: [],
   loading: true,
   error: null,
   refresh: () => {},
 });
 
-export function useShows() {
+export function useShows(): ShowsCtx {
   return useContext(ShowsContext);
 }
 
-// ─── Module-level cache (persists across re-renders, cleared on refresh) ──────
+// ─── Module-level data cache (persists across navigation, cleared on refresh) ─
 
-let _cachedShows: Show[] | null = null;
-let _cachedAt = 0;
+let _cache: Show[] | null = null;
+let _cacheTime = 0;
 const STALE_MS = 45 * 60 * 1000;
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
@@ -46,13 +46,12 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
   const attraction = event._embedded?.attractions?.[0];
   const venueData = event._embedded?.venues?.[0];
   const artistName = attraction?.name ?? event.name ?? 'Unknown Artist';
-  const tmImage = tmImageUrl(event);
 
   const artist: Artist = {
     id: spotify?.id ?? attraction?.id ?? artistName,
     spotifyId: spotify?.id,
     name: artistName,
-    image: tmImage,
+    image: tmImageUrl(event),
     genres: Array.isArray(spotify?.genres) ? spotify!.genres : [],
     followers: spotify?.followers?.total ?? 0,
     popularity: spotify?.popularity ?? 50,
@@ -91,12 +90,15 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
     heatScore: spotify?.popularity ?? 50,
     ticketPrice: priceMin != null ? `$${Math.round(priceMin)}` : 'TBD',
     ticketStatus: 'available',
-    image: tmImage,
+    image: tmImageUrl(event),
     ticketUrl: event.url,
   };
 }
 
-async function fetchInBatches(names: string[], batchSize = 10): Promise<Map<string, SpotifyArtist | null>> {
+async function fetchInBatches(
+  names: string[],
+  batchSize = 10,
+): Promise<Map<string, SpotifyArtist | null>> {
   const results = new Map<string, SpotifyArtist | null>();
   for (let i = 0; i < names.length; i += batchSize) {
     const batch = names.slice(i, i + batchSize);
@@ -109,75 +111,74 @@ async function fetchInBatches(names: string[], batchSize = 10): Promise<Map<stri
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
+// Place this INSIDE the router (e.g. MobileAppLayout) so context updates never
+// cascade through RouterProvider, which destabilises React Router's reconciler.
 
 export function ShowsProvider({ children }: { children: ReactNode }) {
-  const hasCachedData = _cachedShows !== null && Date.now() - _cachedAt < STALE_MS;
-
-  const [shows, setShows] = useState<Show[]>(hasCachedData ? _cachedShows! : []);
-  const [loading, setLoading] = useState(!hasCachedData);
+  // Start with cached data if available so returning to Discover is instant
+  const [shows, setShows] = useState<Show[]>(_cache ?? []);
+  const [loading, setLoading] = useState<boolean>(_cache === null);
   const [error, setError] = useState<string | null>(null);
-  const [fetchKey, setFetchKey] = useState(0);
-
-  const fetchKeyRef = useRef(fetchKey);
-  useEffect(() => { fetchKeyRef.current = fetchKey; }, [fetchKey]);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const thisFetch = fetchKey;
-
-    // If fresh cached data exists and this isn't a manual refresh, skip
-    if (_cachedShows !== null && Date.now() - _cachedAt < STALE_MS && fetchKey === 0) {
-      setShows(_cachedShows);
+    // Use fresh cache on first mount; force re-fetch only after manual refresh
+    if (_cache !== null && Date.now() - _cacheTime < STALE_MS && tick === 0) {
+      setShows(_cache);
       setLoading(false);
       return;
     }
 
-    let cancelled = false;
+    let dead = false;
 
-    async function load() {
+    (async () => {
       setLoading(true);
       setError(null);
 
       try {
         const events = await fetchSeattleShows();
-        if (cancelled || fetchKeyRef.current !== thisFetch) return;
+        if (dead) return;
 
-        // Phase 1: TM data — render immediately
+        // Phase 1 — render TM data immediately
         const tmShows = events.map(e => buildShow(e, null));
         setShows(tmShows);
         setLoading(false);
 
-        // Phase 2: Spotify enrichment — update in background
-        const names = [...new Set(events.map(e =>
-          e._embedded?.attractions?.[0]?.name ?? e.name ?? ''
-        ))].filter(Boolean);
+        // Phase 2 — enrich with Spotify in background
+        const names = [
+          ...new Set(
+            events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name ?? ''),
+          ),
+        ].filter(Boolean);
 
         const spotifyMap = await fetchInBatches(names, 30);
-        if (cancelled || fetchKeyRef.current !== thisFetch) return;
+        if (dead) return;
 
-        const enrichedShows = events.map(e => {
+        const enriched = events.map(e => {
           const name = e._embedded?.attractions?.[0]?.name ?? e.name ?? '';
           return buildShow(e, spotifyMap.get(name) ?? null);
         });
 
-        _cachedShows = enrichedShows;
-        _cachedAt = Date.now();
-        setShows(enrichedShows);
+        _cache = enriched;
+        _cacheTime = Date.now();
+        setShows(enriched);
       } catch {
-        if (cancelled || fetchKeyRef.current !== thisFetch) return;
+        if (dead) return;
         setLoading(false);
         setError('Failed to load shows. Please try again.');
       }
-    }
+    })();
 
-    load();
-    return () => { cancelled = true; };
-  }, [fetchKey]);
+    return () => {
+      dead = true;
+    };
+  }, [tick]);
 
-  const refresh = useCallback(() => {
-    _cachedShows = null;
-    _cachedAt = 0;
-    setFetchKey(k => k + 1);
-  }, []);
+  function refresh() {
+    _cache = null;
+    _cacheTime = 0;
+    setTick(t => t + 1);
+  }
 
   return (
     <ShowsContext.Provider value={{ shows, loading, error, refresh }}>

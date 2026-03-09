@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, useRouteError } from "react-router";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import { ShowDetailPage } from "./pages/ShowDetailPage";
 import { ArtistProfilePage } from "./pages/ArtistProfilePage";
@@ -16,10 +16,28 @@ import { DesignPatternMockupsPage } from "./pages/DesignPatternMockupsPage";
 import { ShowDetailMockupsPage } from "./pages/ShowDetailMockupsPage";
 import { MobileAppLayout } from "./layouts/MobileAppLayout";
 
+function RouteError() {
+  const err = useRouteError() as Error | null;
+  console.error('[RouteError]', err);
+  return (
+    <div style={{ padding: '2rem', color: '#F1F0FB', background: '#09090F', minHeight: '100vh' }}>
+      <h2 style={{ color: '#A78BFA', marginBottom: '0.5rem' }}>Something went wrong</h2>
+      <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{err?.message ?? 'Unknown error'}</p>
+      <button
+        onClick={() => window.location.reload()}
+        style={{ marginTop: '1rem', padding: '0.5rem 1.25rem', background: '#A78BFA', color: '#09090F', border: 'none', borderRadius: '9999px', cursor: 'pointer', fontWeight: 600 }}
+      >
+        Reload
+      </button>
+    </div>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: MobileAppLayout,
+    ErrorBoundary: RouteError,
     children: [
       {
         index: true,
