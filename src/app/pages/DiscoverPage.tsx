@@ -238,15 +238,7 @@ export function DiscoverPage() {
 
         {/* Shows available — render regardless of loading (Spotify enrichment is in background) */}
         {hasShows && hasFiltered && (
-          <ErrorBoundary
-            fallback={
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredShows.map(show => (
-                  <ShowCard key={show.id} show={show} />
-                ))}
-              </div>
-            }
-          >
+          <ErrorBoundary>
             <ShowsContent shows={shows} filteredShows={filteredShows} />
           </ErrorBoundary>
         )}
