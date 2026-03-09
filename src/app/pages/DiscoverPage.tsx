@@ -144,8 +144,12 @@ function ShowSections({ shows }: { shows: Show[] }) {
 // ─── Main content — wrapped so ErrorBoundary covers carousel + sections ───────
 
 function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: Show[] }) {
+  console.log('[ShowsContent] rendering, filteredShows=', filteredShows.length);
   return (
     <>
+      <div style={{ position: 'fixed', top: 24, left: 0, right: 0, zIndex: 9998, background: 'blue', color: 'white', padding: '4px 8px', fontSize: '11px', fontFamily: 'monospace' }}>
+        ShowsContent rendered — filteredShows={filteredShows.length}
+      </div>
       <FeaturedCarousel shows={filteredShows} />
       <ShowSections shows={filteredShows} />
     </>
