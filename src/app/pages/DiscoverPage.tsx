@@ -150,6 +150,7 @@ function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: 
       <div style={{ position: 'fixed', top: 24, left: 0, right: 0, zIndex: 9998, background: 'blue', color: 'white', padding: '4px 8px', fontSize: '11px', fontFamily: 'monospace' }}>
         ShowsContent rendered — filteredShows={filteredShows.length}
       </div>
+      <p style={{ color: 'lime', fontSize: 14, marginBottom: 8 }}>IN-FLOW: ShowsContent active</p>
       <FeaturedCarousel shows={filteredShows} />
       <ShowSections shows={filteredShows} />
     </>
