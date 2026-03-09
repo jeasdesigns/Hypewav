@@ -151,7 +151,7 @@ function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: 
         ShowsContent rendered — filteredShows={filteredShows.length}
       </div>
       <p style={{ color: 'lime', fontSize: 14, marginBottom: 8 }}>IN-FLOW: ShowsContent active</p>
-      <FeaturedCarousel shows={filteredShows} />
+      {/* FeaturedCarousel temporarily disabled for diagnosis */}
       <ShowSections shows={filteredShows} />
     </>
   );
