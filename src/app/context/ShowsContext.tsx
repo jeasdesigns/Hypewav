@@ -52,7 +52,7 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
     spotifyId: spotify?.id,
     name: artistName,
     image: tmImageUrl(event),
-    genres: Array.isArray(spotify?.genres) ? spotify!.genres : [],
+    genres: [], // TEST: disable genres to isolate cause
     followers: spotify?.followers?.total ?? 0,
     popularity: spotify?.popularity ?? 50,
     bio: '',
