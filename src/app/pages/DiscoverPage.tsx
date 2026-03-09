@@ -206,7 +206,7 @@ export function DiscoverPage() {
         </div>
       </div>
 
-      <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
+      <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full" style={{ border: '4px solid orange', minHeight: '300px' }}>
 
         {/* DEBUG — remove after diagnosis */}
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'red', color: 'white', padding: '8px', fontSize: '12px', fontFamily: 'monospace' }}>
