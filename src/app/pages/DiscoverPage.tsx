@@ -6,6 +6,7 @@ import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { AppLayout } from "../components/AppLayout";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { useShows } from "../context/ShowsContext";
+import { Show } from "../data/mockData";
 import { ChevronRight, Zap, RefreshCw } from "lucide-react";
 
 function ShowCardSkeleton() {
@@ -16,66 +17,76 @@ function ShowCardSkeleton() {
   );
 }
 
-function EmptyState({ message, sub, onRefresh }: { message: string; sub: string; onRefresh: () => void }) {
+function RefreshButton({ onRefresh }: { onRefresh: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
-      <div className="w-16 h-16 rounded-full bg-[#13121E] flex items-center justify-center mb-2">
-        <span className="text-3xl">🎵</span>
-      </div>
-      <div>
-        <h3 className="text-xl font-bold text-[#F1F0FB] mb-2">{message}</h3>
-        <p className="text-[#9CA3AF] text-sm max-w-xs">{sub}</p>
-      </div>
-      <button
-        onClick={onRefresh}
-        className="flex items-center gap-2 px-5 py-2.5 bg-[#A78BFA]/20 hover:bg-[#A78BFA]/30 text-[#A78BFA] rounded-full text-sm font-medium transition-colors active:scale-95 border border-[#A78BFA]/30"
-      >
-        <RefreshCw className="w-4 h-4" />
-        Refresh
-      </button>
-    </div>
+    <button
+      onClick={onRefresh}
+      className="flex items-center gap-2 px-5 py-2.5 bg-[#A78BFA]/20 hover:bg-[#A78BFA]/30 text-[#A78BFA] rounded-full text-sm font-medium transition-colors active:scale-95 border border-[#A78BFA]/30"
+    >
+      <RefreshCw className="w-4 h-4" />
+      Refresh
+    </button>
   );
 }
 
-function ShowsContent({ shows, filteredShows }: { shows: ReturnType<typeof useShows>['shows']; filteredShows: ReturnType<typeof useShows>['shows'] }) {
+// ─── Section logic extracted, wrapped in ErrorBoundary ────────────────────────
+
+function ShowSections({ shows }: { shows: Show[] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const weekEnd = new Date(today);
-  weekEnd.setDate(today.getDate() + 7);
+  const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const trendingIds = new Set(
-    filteredShows.filter(s => (s.heatScore ?? 0) >= 75).slice(0, 3).map(s => s.id)
-  );
-  const thisWeekIds = new Set(
-    filteredShows.filter(s => {
-      try {
-        const d = new Date(s.date + 'T00:00:00');
-        return !isNaN(d.getTime()) && d >= today && d < weekEnd;
-      } catch { return false; }
-    }).map(s => s.id)
-  );
-  const laterIds = new Set(
-    filteredShows.filter(s => {
-      try {
-        const d = new Date(s.date + 'T00:00:00');
-        return !isNaN(d.getTime()) && d >= weekEnd;
-      } catch { return false; }
-    }).map(s => s.id)
+  const trending: Show[] = [];
+  const thisWeek: Show[] = [];
+  const later: Show[] = [];
+
+  const trendingSet = new Set(
+    shows.filter(s => (s.heatScore ?? 0) >= 75).slice(0, 3).map(s => s.id)
   );
 
-  const trending = filteredShows.filter(s => trendingIds.has(s.id));
-  const thisWeek = filteredShows.filter(s => !trendingIds.has(s.id) && thisWeekIds.has(s.id));
-  const later = filteredShows.filter(s => !trendingIds.has(s.id) && !thisWeekIds.has(s.id) && laterIds.has(s.id));
-  const other = filteredShows.filter(s => !trendingIds.has(s.id) && !thisWeekIds.has(s.id) && !laterIds.has(s.id));
+  for (const s of shows) {
+    if (trendingSet.has(s.id)) {
+      trending.push(s);
+      continue;
+    }
+    try {
+      const d = new Date(s.date + 'T00:00:00');
+      if (!isNaN(d.getTime()) && d >= today && d < weekEnd) {
+        thisWeek.push(s);
+      } else if (!isNaN(d.getTime()) && d >= weekEnd) {
+        later.push(s);
+      } else {
+        // past or invalid date — will fall into the "all shows" catch-all
+      }
+    } catch {
+      // skip
+    }
+  }
 
-  // If everything ends up in 'other' (e.g. all shows have past/invalid dates),
-  // just show them as upcoming — never blank
-  const allOther = trending.length === 0 && thisWeek.length === 0 && later.length === 0;
+  const bucketed = new Set([
+    ...trending.map(s => s.id),
+    ...thisWeek.map(s => s.id),
+    ...later.map(s => s.id),
+  ]);
+  const remaining = shows.filter(s => !bucketed.has(s.id));
+
+  // If nothing was bucketed, show everything under one heading
+  if (trending.length === 0 && thisWeek.length === 0 && later.length === 0) {
+    return (
+      <section className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Zap className="w-5 h-5 text-[#A78BFA]" />
+          <h2 className="text-xl font-bold text-[#F1F0FB]">UPCOMING SHOWS</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {shows.map(show => <ShowCard key={show.id} show={show} />)}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
-      <FeaturedCarousel shows={filteredShows} />
-
       {trending.length > 0 && (
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-4">
@@ -116,21 +127,13 @@ function ShowsContent({ shows, filteredShows }: { shows: ReturnType<typeof useSh
         </section>
       )}
 
-      {(allOther || other.length > 0) && (
+      {remaining.length > 0 && (
         <section className="mb-8">
-          {allOther && (
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-[#A78BFA]" />
-              <h2 className="text-xl font-bold text-[#F1F0FB]">UPCOMING SHOWS</h2>
-            </div>
-          )}
-          {!allOther && other.length > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-bold text-[#F1F0FB]">MORE SHOWS</h2>
-            </div>
-          )}
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold text-[#F1F0FB]">MORE SHOWS</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {(allOther ? filteredShows : other).map(show => <ShowCard key={show.id} show={show} />)}
+            {remaining.map(show => <ShowCard key={show.id} show={show} />)}
           </div>
         </section>
       )}
@@ -138,29 +141,48 @@ function ShowsContent({ shows, filteredShows }: { shows: ReturnType<typeof useSh
   );
 }
 
+// ─── Main content — wrapped so ErrorBoundary covers carousel + sections ───────
+
+function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: Show[] }) {
+  return (
+    <>
+      <FeaturedCarousel shows={filteredShows} />
+      <ShowSections shows={filteredShows} />
+    </>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export function DiscoverPage() {
   const { shows, loading, error, refresh } = useShows();
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   const genres = useMemo(() => {
     const all = new Set<string>();
-    shows.forEach(show =>
-      show.artist.genres?.forEach(g => {
+    shows.forEach(show => {
+      if (!Array.isArray(show?.artist?.genres)) return;
+      show.artist.genres.forEach(g => {
+        if (typeof g !== 'string') return;
         const formatted = g.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         all.add(formatted);
-      })
-    );
+      });
+    });
     return ['All', ...Array.from(all).sort()];
   }, [shows]);
 
   const filteredShows = useMemo(() => {
     if (selectedGenre === 'All') return shows;
     return shows.filter(show =>
-      show.artist.genres?.some(g =>
-        g.toLowerCase().includes(selectedGenre.toLowerCase())
+      Array.isArray(show?.artist?.genres) &&
+      show.artist.genres.some(g =>
+        typeof g === 'string' && g.toLowerCase().includes(selectedGenre.toLowerCase())
       )
     );
   }, [shows, selectedGenre]);
+
+  const hasShows = shows.length > 0;
+  const hasFiltered = filteredShows.length > 0;
 
   return (
     <AppLayout>
@@ -180,7 +202,8 @@ export function DiscoverPage() {
 
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 
-        {loading && (
+        {/* Loading skeleton — only when no data yet */}
+        {!hasShows && loading && (
           <section className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="w-5 h-5 text-[#A78BFA]" />
@@ -192,19 +215,35 @@ export function DiscoverPage() {
           </section>
         )}
 
-        {!loading && error && (
-          <EmptyState
-            message="Couldn't load shows"
-            sub="We hit a snag fetching Seattle shows. Tap refresh to try again."
-            onRefresh={refresh}
-          />
+        {/* Error with no data */}
+        {!hasShows && !loading && error && (
+          <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
+            <h3 className="text-xl font-bold text-[#F1F0FB] mb-2">Couldn't load shows</h3>
+            <p className="text-[#9CA3AF] text-sm max-w-xs">We hit a snag fetching Seattle shows.</p>
+            <RefreshButton onRefresh={refresh} />
+          </div>
         )}
 
-        {!loading && !error && filteredShows.length > 0 && (
+        {/* No shows and not loading */}
+        {!hasShows && !loading && !error && (
+          <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
+            <div className="w-16 h-16 rounded-full bg-[#13121E] flex items-center justify-center mb-2">
+              <span className="text-3xl">🎵</span>
+            </div>
+            <h3 className="text-xl font-bold text-[#F1F0FB] mb-2">Nothing on the lineup right now</h3>
+            <p className="text-[#9CA3AF] text-sm max-w-xs">Looks like Seattle's taking a breather. Check back soon or hit refresh.</p>
+            <RefreshButton onRefresh={refresh} />
+          </div>
+        )}
+
+        {/* Shows available — render regardless of loading (Spotify enrichment is in background) */}
+        {hasShows && hasFiltered && (
           <ErrorBoundary
             fallback={
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredShows.map(show => <ShowCard key={show.id} show={show} />)}
+                {filteredShows.map(show => (
+                  <ShowCard key={show.id} show={show} />
+                ))}
               </div>
             }
           >
@@ -212,20 +251,16 @@ export function DiscoverPage() {
           </ErrorBoundary>
         )}
 
-        {!loading && !error && shows.length > 0 && filteredShows.length === 0 && (
-          <EmptyState
-            message={`No ${selectedGenre} shows right now`}
-            sub="Nothing's playing in that genre at the moment. Try a different one or check back soon."
-            onRefresh={refresh}
-          />
-        )}
-
-        {!loading && !error && shows.length === 0 && (
-          <EmptyState
-            message="Nothing on the lineup right now"
-            sub="Looks like Seattle's taking a breather. Check back soon or hit refresh to try again."
-            onRefresh={refresh}
-          />
+        {/* Genre filter returned no results */}
+        {hasShows && !hasFiltered && (
+          <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
+            <div className="w-16 h-16 rounded-full bg-[#13121E] flex items-center justify-center mb-2">
+              <span className="text-3xl">🎵</span>
+            </div>
+            <h3 className="text-xl font-bold text-[#F1F0FB] mb-2">No {selectedGenre} shows right now</h3>
+            <p className="text-[#9CA3AF] text-sm max-w-xs">Nothing's playing in that genre at the moment. Try a different one or check back soon.</p>
+            <RefreshButton onRefresh={refresh} />
+          </div>
         )}
 
       </main>
