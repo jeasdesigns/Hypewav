@@ -202,6 +202,11 @@ export function DiscoverPage() {
 
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 
+        {/* DEBUG — remove after diagnosis */}
+        <div className="text-xs text-[#9CA3AF] bg-[#13121E] px-3 py-2 rounded mb-4 font-mono">
+          shows={shows.length} loading={String(loading)} error={error ?? 'none'} hasShows={String(hasShows)} hasFiltered={String(hasFiltered)} genre="{selectedGenre}"
+        </div>
+
         {/* Loading skeleton — only when no data yet */}
         {!hasShows && loading && (
           <section className="mb-8">
