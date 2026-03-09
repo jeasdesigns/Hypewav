@@ -1,20 +1,17 @@
-import { createContext, useContext, useSyncExternalStore, ReactNode } from 'react';
+import { useEffect, useSyncExternalStore, ReactNode } from 'react';
 import { Show, Artist, Venue, Track } from '../data/mockData';
 import { fetchSeattleShows, TMEvent } from '../services/ticketmasterService';
 import { fetchArtistByName, SpotifyArtist } from '../services/spotifyService';
 
 // ─── Module-level store ────────────────────────────────────────────────────────
-// Lives completely outside React — survives unmounts, navigation, StrictMode.
-// Uses useSyncExternalStore for React 18 concurrent-mode safety (no tearing).
 
 let _shows: Show[] = [];
 let _loading = true;
 let _error: string | null = null;
 let _fetchStarted = false;
 let _fetchedAt = 0;
-const STALE_MS = 45 * 60 * 1000; // re-fetch after 45 minutes
+const STALE_MS = 45 * 60 * 1000;
 
-// Stable snapshot object — only replaced when state actually changes
 let _snapshot = { shows: _shows, loading: _loading, error: _error };
 
 const _listeners = new Set<() => void>();
@@ -24,15 +21,16 @@ function notify() {
   _listeners.forEach(fn => fn());
 }
 
-function subscribe(cb: () => void) {
+export function subscribe(cb: () => void) {
   _listeners.add(cb);
   return () => _listeners.delete(cb);
 }
 
-function getSnapshot() {
+export function getSnapshot() {
   return _snapshot;
 }
-// ──────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function tmImageUrl(event: TMEvent): string {
   return (
@@ -109,25 +107,21 @@ async function fetchInBatches(names: string[], batchSize = 10): Promise<Map<stri
   return results;
 }
 
-// Fetches shows — re-fetches if data is stale (> 45 min old)
 async function loadShows() {
   const isStale = _fetchedAt > 0 && Date.now() - _fetchedAt > STALE_MS;
   if (_fetchStarted && !isStale) return;
 
-  // Reset for re-fetch (keeps existing shows visible while refreshing)
   _fetchStarted = true;
   _error = null;
 
   try {
     const events = await fetchSeattleShows();
 
-    // Phase 1: show TM data immediately
     _shows = events.map(e => buildShow(e, null));
     _loading = false;
     _fetchedAt = Date.now();
     notify();
 
-    // Phase 2: enrich with Spotify in background
     const names = [...new Set(events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name))];
     const spotifyMap = await fetchInBatches(names, 10);
 
@@ -143,33 +137,22 @@ async function loadShows() {
   }
 }
 
-// ─── Context (thin wrapper — real state lives in the store above) ──────────────
-
-interface ShowsContextValue {
-  shows: Show[];
-  loading: boolean;
-  error: string | null;
-}
-
-const ShowsContext = createContext<ShowsContextValue>(_snapshot);
-
-export function ShowsProvider({ children }: { children: ReactNode }) {
-  // useSyncExternalStore ensures consistent reads in React 18 concurrent mode —
-  // prevents the "tearing" that causes blank pages on navigation
-  const value = useSyncExternalStore(subscribe, getSnapshot);
-
-  // Kick off the fetch — idempotent, re-fetches automatically when stale
-  if (!_fetchStarted || (_fetchedAt > 0 && Date.now() - _fetchedAt > STALE_MS)) loadShows();
-
-  return (
-    <ShowsContext.Provider value={value}>
-      {children}
-    </ShowsContext.Provider>
-  );
-}
+// ─── Hook — reads directly from store, NO context layer ──────────────────────
+// Using useSyncExternalStore directly eliminates any context propagation lag
+// that could cause stale reads during concurrent React rendering.
 
 export function useShows() {
-  return useContext(ShowsContext);
+  return useSyncExternalStore(subscribe, getSnapshot);
+}
+
+// ─── Provider — just kicks off the fetch, no Context needed ──────────────────
+
+export function ShowsProvider({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    loadShows();
+  }, []);
+
+  return <>{children}</>;
 }
 
 // Force a fresh fetch — call this from a "refresh" button
