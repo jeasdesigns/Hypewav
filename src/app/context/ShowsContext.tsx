@@ -1,34 +1,37 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { Show, Artist, Venue, Track } from '../data/mockData';
 import { fetchSeattleShows, TMEvent } from '../services/ticketmasterService';
 import { fetchArtistByName, SpotifyArtist } from '../services/spotifyService';
 
-// ─── Module-level store ────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ShowsSnapshot {
+interface ShowsState {
   shows: Show[];
   loading: boolean;
   error: string | null;
+  refresh: () => void;
 }
 
-let _shows: Show[] = [];
-let _loading = true;
-let _error: string | null = null;
-let _fetchStarted = false;
-let _fetchedAt = 0;
+// ─── Context ──────────────────────────────────────────────────────────────────
+
+const ShowsContext = createContext<ShowsState>({
+  shows: [],
+  loading: true,
+  error: null,
+  refresh: () => {},
+});
+
+export function useShows() {
+  return useContext(ShowsContext);
+}
+
+// ─── Module-level cache (persists across re-renders, cleared on refresh) ──────
+
+let _cachedShows: Show[] | null = null;
+let _cachedAt = 0;
 const STALE_MS = 45 * 60 * 1000;
 
-const _listeners = new Set<() => void>();
-
-function notify() {
-  _listeners.forEach(fn => fn());
-}
-
-function getSnapshot(): ShowsSnapshot {
-  return { shows: _shows, loading: _loading, error: _error };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Data helpers ─────────────────────────────────────────────────────────────
 
 function tmImageUrl(event: TMEvent): string {
   return (
@@ -42,7 +45,7 @@ function tmImageUrl(event: TMEvent): string {
 function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
   const attraction = event._embedded?.attractions?.[0];
   const venueData = event._embedded?.venues?.[0];
-  const artistName = attraction?.name ?? event.name;
+  const artistName = attraction?.name ?? event.name ?? 'Unknown Artist';
   const tmImage = tmImageUrl(event);
 
   const artist: Artist = {
@@ -50,12 +53,12 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
     spotifyId: spotify?.id,
     name: artistName,
     image: tmImage,
-    genres: spotify?.genres ?? [],
-    followers: spotify?.followers.total ?? 0,
+    genres: Array.isArray(spotify?.genres) ? spotify!.genres : [],
+    followers: spotify?.followers?.total ?? 0,
     popularity: spotify?.popularity ?? 50,
     bio: '',
     topTracks: [] as Track[],
-    spotifyUrl: spotify?.external_urls.spotify ?? attraction?.externalLinks?.spotify?.[0]?.url,
+    spotifyUrl: spotify?.external_urls?.spotify ?? attraction?.externalLinks?.spotify?.[0]?.url,
     instagramUrl: attraction?.externalLinks?.instagram?.[0]?.url,
     youtubeUrl: attraction?.externalLinks?.youtube?.[0]?.url,
     facebookUrl: attraction?.externalLinks?.facebook?.[0]?.url,
@@ -73,13 +76,13 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
   };
 
   const priceMin = event.priceRanges?.[0]?.min;
-  const localTime = event.dates.start.localTime;
+  const localTime = event.dates?.start?.localTime;
 
   return {
     id: event.id,
     artist,
     venue,
-    date: event.dates.start.localDate,
+    date: event.dates?.start?.localDate ?? '',
     time: localTime
       ? new Date(`2000-01-01T${localTime}`).toLocaleTimeString('en-US', {
           hour: 'numeric', minute: '2-digit', hour12: true,
@@ -105,72 +108,80 @@ async function fetchInBatches(names: string[], batchSize = 10): Promise<Map<stri
   return results;
 }
 
-async function loadShows() {
-  const isStale = _fetchedAt > 0 && Date.now() - _fetchedAt > STALE_MS;
-  if (_fetchStarted && !isStale) return;
-
-  _fetchStarted = true;
-  _error = null;
-
-  try {
-    const events = await fetchSeattleShows();
-
-    _shows = events.map(e => buildShow(e, null));
-    _loading = false;
-    _fetchedAt = Date.now();
-    notify();
-
-    const names = [...new Set(events.map(e => e._embedded?.attractions?.[0]?.name ?? e.name))];
-    const spotifyMap = await fetchInBatches(names, 30);
-
-    _shows = events.map(e => {
-      const name = e._embedded?.attractions?.[0]?.name ?? e.name;
-      return buildShow(e, spotifyMap.get(name) ?? null);
-    });
-    notify();
-  } catch {
-    _error = 'Failed to load shows. Please try again.';
-    _loading = false;
-    notify();
-  }
-}
-
-// ─── Hook — subscribes to the module-level store via useState ────────────────
-// Using useState + useEffect avoids React 18 concurrent mode edge cases with
-// useSyncExternalStore where snapshot reads can silently produce stale renders
-// on navigation.
-
-export function useShows() {
-  const [snap, setSnap] = useState<ShowsSnapshot>(getSnapshot);
-
-  useEffect(() => {
-    // Re-sync immediately: state may have changed between the render and this effect
-    setSnap(getSnapshot());
-
-    const unsub = () => setSnap(getSnapshot());
-    _listeners.add(unsub);
-    return () => { _listeners.delete(unsub); };
-  }, []);
-
-  return snap;
-}
-
-// ─── Provider — kicks off the fetch, stable at App root ──────────────────────
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function ShowsProvider({ children }: { children: ReactNode }) {
+  const hasCachedData = _cachedShows !== null && Date.now() - _cachedAt < STALE_MS;
+
+  const [shows, setShows] = useState<Show[]>(hasCachedData ? _cachedShows! : []);
+  const [loading, setLoading] = useState(!hasCachedData);
+  const [error, setError] = useState<string | null>(null);
+  const [fetchKey, setFetchKey] = useState(0);
+
+  const fetchKeyRef = useRef(fetchKey);
+  useEffect(() => { fetchKeyRef.current = fetchKey; }, [fetchKey]);
+
   useEffect(() => {
-    loadShows();
+    const thisFetch = fetchKey;
+
+    // If fresh cached data exists and this isn't a manual refresh, skip
+    if (_cachedShows !== null && Date.now() - _cachedAt < STALE_MS && fetchKey === 0) {
+      setShows(_cachedShows);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const events = await fetchSeattleShows();
+        if (cancelled || fetchKeyRef.current !== thisFetch) return;
+
+        // Phase 1: TM data — render immediately
+        const tmShows = events.map(e => buildShow(e, null));
+        setShows(tmShows);
+        setLoading(false);
+
+        // Phase 2: Spotify enrichment — update in background
+        const names = [...new Set(events.map(e =>
+          e._embedded?.attractions?.[0]?.name ?? e.name ?? ''
+        ))].filter(Boolean);
+
+        const spotifyMap = await fetchInBatches(names, 30);
+        if (cancelled || fetchKeyRef.current !== thisFetch) return;
+
+        const enrichedShows = events.map(e => {
+          const name = e._embedded?.attractions?.[0]?.name ?? e.name ?? '';
+          return buildShow(e, spotifyMap.get(name) ?? null);
+        });
+
+        _cachedShows = enrichedShows;
+        _cachedAt = Date.now();
+        setShows(enrichedShows);
+      } catch {
+        if (cancelled || fetchKeyRef.current !== thisFetch) return;
+        setLoading(false);
+        setError('Failed to load shows. Please try again.');
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [fetchKey]);
+
+  const refresh = useCallback(() => {
+    _cachedShows = null;
+    _cachedAt = 0;
+    setFetchKey(k => k + 1);
   }, []);
 
-  return <>{children}</>;
-}
-
-// Force a fresh fetch — call this from a "refresh" button
-export function refreshShows() {
-  _fetchedAt = 0;
-  _fetchStarted = false;
-  _loading = true;
-  _error = null;
-  notify();
-  loadShows();
+  return (
+    <ShowsContext.Provider value={{ shows, loading, error, refresh }}>
+      {children}
+    </ShowsContext.Provider>
+  );
 }

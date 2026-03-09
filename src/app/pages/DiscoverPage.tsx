@@ -5,7 +5,7 @@ import { ShowCard } from "../components/ShowCard";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { AppLayout } from "../components/AppLayout";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import { useShows, refreshShows } from "../context/ShowsContext";
+import { useShows } from "../context/ShowsContext";
 import { ChevronRight, Zap, RefreshCw } from "lucide-react";
 
 function ShowCardSkeleton() {
@@ -16,7 +16,7 @@ function ShowCardSkeleton() {
   );
 }
 
-function EmptyState({ message, sub }: { message: string; sub: string }) {
+function EmptyState({ message, sub, onRefresh }: { message: string; sub: string; onRefresh: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
       <div className="w-16 h-16 rounded-full bg-[#13121E] flex items-center justify-center mb-2">
@@ -27,7 +27,7 @@ function EmptyState({ message, sub }: { message: string; sub: string }) {
         <p className="text-[#9CA3AF] text-sm max-w-xs">{sub}</p>
       </div>
       <button
-        onClick={refreshShows}
+        onClick={onRefresh}
         className="flex items-center gap-2 px-5 py-2.5 bg-[#A78BFA]/20 hover:bg-[#A78BFA]/30 text-[#A78BFA] rounded-full text-sm font-medium transition-colors active:scale-95 border border-[#A78BFA]/30"
       >
         <RefreshCw className="w-4 h-4" />
@@ -139,7 +139,7 @@ function ShowsContent({ shows, filteredShows }: { shows: ReturnType<typeof useSh
 }
 
 export function DiscoverPage() {
-  const { shows, loading, error } = useShows();
+  const { shows, loading, error, refresh } = useShows();
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   const genres = useMemo(() => {
@@ -196,6 +196,7 @@ export function DiscoverPage() {
           <EmptyState
             message="Couldn't load shows"
             sub="We hit a snag fetching Seattle shows. Tap refresh to try again."
+            onRefresh={refresh}
           />
         )}
 
@@ -215,6 +216,7 @@ export function DiscoverPage() {
           <EmptyState
             message={`No ${selectedGenre} shows right now`}
             sub="Nothing's playing in that genre at the moment. Try a different one or check back soon."
+            onRefresh={refresh}
           />
         )}
 
@@ -222,6 +224,7 @@ export function DiscoverPage() {
           <EmptyState
             message="Nothing on the lineup right now"
             sub="Looks like Seattle's taking a breather. Check back soon or hit refresh to try again."
+            onRefresh={refresh}
           />
         )}
 
