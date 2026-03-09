@@ -28,7 +28,11 @@ export function ShowCard({ show }: ShowCardProps) {
         </div>
 
         {/* Genre Badge - Top Left */}
-        {/* Genre badge disabled for diagnosis */}
+        {show.artist?.genres?.[0] && (
+          <div className="absolute top-3 left-3 bg-[#A78BFA] px-3 py-1.5 rounded-full text-xs font-medium text-[#09090F] shadow-lg">
+            {show.artist.genres[0]}
+          </div>
+        )}
 
         {/* Featured Show Indicator - Option B (Top Right) */}
         {show.ticketStatus === 'selling-fast' && (

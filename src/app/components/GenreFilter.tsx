@@ -8,7 +8,7 @@ interface GenreFilterProps {
 
 export function GenreFilter({ selectedGenre, onGenreChange, genres = defaultGenres }: GenreFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {genres.map((genre) => (
         <button
           key={genre}

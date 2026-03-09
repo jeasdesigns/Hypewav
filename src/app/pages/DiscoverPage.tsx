@@ -55,8 +55,6 @@ function ShowSections({ shows }: { shows: Show[] }) {
         thisWeek.push(s);
       } else if (!isNaN(d.getTime()) && d >= weekEnd) {
         later.push(s);
-      } else {
-        // past or invalid date — will fall into the "all shows" catch-all
       }
     } catch {
       // skip
@@ -144,14 +142,9 @@ function ShowSections({ shows }: { shows: Show[] }) {
 // ─── Main content — wrapped so ErrorBoundary covers carousel + sections ───────
 
 function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: Show[] }) {
-  console.log('[ShowsContent] rendering, filteredShows=', filteredShows.length);
   return (
     <>
-      <div style={{ position: 'fixed', top: 24, left: 0, right: 0, zIndex: 9998, background: 'blue', color: 'white', padding: '4px 8px', fontSize: '11px', fontFamily: 'monospace' }}>
-        ShowsContent rendered — filteredShows={filteredShows.length}
-      </div>
-      <p style={{ color: 'lime', fontSize: 14, marginBottom: 8 }}>IN-FLOW: ShowsContent active</p>
-      {/* FeaturedCarousel temporarily disabled for diagnosis */}
+      <FeaturedCarousel shows={shows} />
       <ShowSections shows={filteredShows} />
     </>
   );
@@ -161,7 +154,6 @@ function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: 
 
 export function DiscoverPage() {
   const { shows, loading, error, refresh } = useShows();
-  console.log('[DiscoverPage] render shows=', shows.length, 'loading=', loading, 'error=', error);
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   const genres = useMemo(() => {
@@ -196,7 +188,7 @@ export function DiscoverPage() {
         <HypeHeader />
       </div>
 
-      <div className="py-4 border-b border-[#13121E]">
+      <div className="py-4 border-b border-[#13121E] overflow-x-hidden">
         <div className="px-4">
           <GenreFilter
             selectedGenre={selectedGenre}
@@ -206,12 +198,7 @@ export function DiscoverPage() {
         </div>
       </div>
 
-      <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full" style={{ border: '4px solid orange', minHeight: '300px' }}>
-
-        {/* DEBUG — remove after diagnosis */}
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'red', color: 'white', padding: '8px', fontSize: '12px', fontFamily: 'monospace' }}>
-          DEBUG: shows={shows.length} loading={String(loading)} error={error ?? 'none'} hasShows={String(hasShows)} hasFiltered={String(hasFiltered)} genre="{selectedGenre}"
-        </div>
+      <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 
         {/* Loading skeleton — only when no data yet */}
         {!hasShows && loading && (
