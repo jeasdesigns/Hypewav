@@ -6,7 +6,7 @@
 | Field | Detail |
 |---|---|
 | **Product name** | Hype.Wav |
-| **Document version** | 3.1 |
+| **Document version** | 3.2 |
 | **Status** | In Review |
 | **Author** | Jose (Product, Design, Engineering) |
 | **Created** | March 2026 |
@@ -388,35 +388,42 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 ### Feature M2 — Discover Page
 
-**Feature:** The app's landing page — a visual, scrollable concert listing with genre filtering and inline search.
+**Feature:** The app's landing page — a visual, scrollable concert listing with a Trending Now section, genre filtering, price range and date filtering, and inline search.
 
-**Description:** The Discover page is the primary surface of Hype.Wav and the first thing users see when they open the app. It presents upcoming concerts as rich visual cards, each surfacing artist image, name, venue, date, genre tags, and lowest ticket price. A persistent search bar and horizontal genre filter strip allow users to narrow results without leaving the page. Tapping a card opens the Artist Modal (M3).
+**Description:** The Discover page is the primary surface of Hype.Wav and the first thing users see when they open the app. It presents upcoming concerts across two sections — a **Trending Now** featured section with larger hero cards, and a **This Week** section with a standard card listing that loads more content as the user scrolls. Each card surfaces artist image, name, venue, date, genre tag, and lowest ticket price — with price displayed inline in the metadata row in the app's accent color for visual distinction, not as a badge. A persistent search bar, horizontal genre filter strip, and a filter drawer (price range + date range) allow users to narrow results without leaving the page. Tapping a card opens the Artist Modal (M3). A map pin within each card links to the venue location inline — there is no dedicated map page.
 
 **User Problem:** Users currently have no single surface where they can browse upcoming shows with enough artist context to spark genuine curiosity. The existing tools either show raw listings with no depth (Ticketmaster) or artist depth with no live show context (Spotify).
 
-**User Value:** Users can open the app and immediately browse a visually rich listing of upcoming shows in their city. Genre tags and ticket prices are visible without any taps. Users who don't know what they're looking for can let the listing wash over them. Users who have a direction can filter by genre or search instantly. Every card is an invitation to go deeper.
+**User Value:** Users can open the app and immediately browse a visually rich listing of upcoming shows in their city. Genre tags and ticket prices are visible without any taps. The Trending Now section gives passive discoverers an editorial anchor — a curated starting point. Users who have a direction can filter by genre, price range, or date instantly. Every card is an invitation to go deeper.
 
 **Assumptions:**
 - M0 (Foundation) and M1 (Data Layer) are fully shipped and validated
-- Ticketmaster provides sufficient concert coverage for the pilot market to make the listing feel populated and current
+- Ticketmaster provides sufficient concert coverage for the pilot market to make both the Trending Now and This Week sections feel populated
 - Genre data from Ticketmaster classifications is accurate enough to power the genre filter without significant manual curation
+- Ticketmaster returns price range data for the majority of listings — cards without price data show no price rather than breaking
+- Trending Now logic in v1 is based on a simple signal (e.g. selling fast flag or high ticket volume from Ticketmaster) — algorithmic trending is a v2 feature
 
 **Not Doing:**
-- Date range filtering — this is a v2 enhancement
-- Featured or curated editorial placements — all cards are equal in v1
+- Price displayed as a prominent badge — price is inline in the metadata row, styled in accent color for visibility
+- Dedicated map page — venue map context lives within the card or artist modal, not as a separate navigation destination
+- Mile/distance radius filter — requires geolocation permissions, adds friction for new users, deferred to v2
 - User-specific personalization of the listing — this is v2
-- Infinite scroll or pagination — v1 loads a single window of upcoming shows
+- Algorithmic or ML-driven trending — Trending Now in v1 uses a simple Ticketmaster signal
 
 **Acceptance Criteria:**
-- [ ] Scrollable concert listing renders with live Ticketmaster + Spotify data
-- [ ] Each card displays: artist image, artist name, venue, date, genre tags, and lowest ticket price
-- [ ] Genre filter strip correctly filters the listing in real time on selection
+- [ ] Discover page renders with two sections: Trending Now (featured hero cards) and This Week (standard card listing)
+- [ ] Each card displays: artist image, artist name, venue, date, genre tag, and lowest ticket price (price in accent color, inline in metadata)
+- [ ] Trending Now cards are visually larger and more prominent than This Week cards
+- [ ] This Week section loads additional cards as the user scrolls (infinite scroll / load more)
+- [ ] Genre filter strip correctly filters both sections in real time on selection
+- [ ] Filter drawer opens from the filter icon in the header and exposes: price range slider and date range toggle (This Week / This Month / All)
 - [ ] Search bar filters results across show name, artist name, genre, and venue name
+- [ ] Map pin on each card opens venue location context inline — no separate map page
 - [ ] Loading skeleton state matches the exact card dimensions of real content
 - [ ] Empty state renders with a message and action when no shows are found
 - [ ] Error state renders with a retry action when the API fails
 - [ ] Tapping a card correctly opens M3 (Artist Modal)
-- [ ] All Figma frames frozen and designs match production 1:1
+- [ ] All Figma frames frozen and designs match production 1:1 on both mobile and web viewports
 - [ ] **M2 is deployed to Cloudflare Pages and validated with live data before M3 or M4 begin**
 
 ---
@@ -690,6 +697,8 @@ v3.x.x  — Community + Social
 | OQ-3 | Should the Discover page genre filter support multi-select or single-select at launch? | Product | Open |
 | OQ-4 | Does search on the Search page query Ticketmaster live or filter the already-loaded dataset client-side? | Engineering | Open |
 | OQ-5 | How should saved concerts persist — local storage for v1, or does v1 require a lightweight backend? | Engineering | Open |
+| OQ-6 | What Ticketmaster signal determines Trending Now in v1 — selling fast flag, ticket volume, or recency? | Engineering | Open |
+| OQ-7 | Does the map pin on a concert card open an inline map preview or link out to Google Maps / Apple Maps? | Product | Open |
 
 ---
 
@@ -699,6 +708,7 @@ v3.x.x  — Community + Social
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
+| PRD 3.2 | March 2026 | Jose | Updated M2 Discover page based on wireframe review — added Trending Now section, infinite scroll, filter drawer (price + date), inline price styling, map pin on card, removed dedicated map nav page |
 | PRD 3.1 | March 2026 | Jose | Added web as a v1.0 launch target alongside mobile; updated constraints, metrics, and acceptance criteria |
 | PRD 3.0 | March 2026 | Jose | Full restructure using 7-step skeleton; merged all prior content into cohesive framework |
 | PRD 2.0 | March 2026 | Jose | Restructured to modular build architecture; added dependency map and module specs |
