@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* ── Hype.Wav Design Tokens ────────────────────────────────── */
+@theme {
+  /* Brand colors — matches production Vite app */
+  --color-hype-violet:    #A78BFA;
+  --color-hype-cyan:      #67E8F9;
+  --color-hype-success:   #10B981;
+  --color-hype-warning:   #F59E0B;
+
+  /* Backgrounds */
+  --color-hype-bg:        #09090F;
+  --color-hype-card:      #13121E;
+  --color-hype-elevated:  #1A1927;
+
+  /* Text */
+  --color-hype-text:      #F1F0FB;
+  --color-hype-muted:     #9CA3AF;
+
+  /* Borders */
+  --color-hype-border:    #1E1D2A;
+
+  /* Layout */
+  --mobile-base:    390px;
+  --nav-height:     72px;
+
+  /* Font */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+html {
+  background-color: #09090F;
+}
+
+body {
+  max-width: var(--mobile-base);
+  margin-inline: auto;
+  min-height: 100dvh;
+  background-color: #09090F;
+  color: #F1F0FB;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+}
+
+/* Violet-tinted scrollbar to match brand */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.4) transparent;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 9999px;
+}
+
+/* ── Utilities ─────────────────────────────────────────────── */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
