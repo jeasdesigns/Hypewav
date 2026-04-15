@@ -13,11 +13,11 @@ function getShowAt(shows: Show[], center: number, offset: number): Show {
 }
 
 const SLOT_CONFIG = [
-  { offset: -2, x: -530, scale: 0.58, opacity: 0.25, z: 0 },
-  { offset: -1, x: -280, scale: 0.80, opacity: 0.65, z: 1 },
+  { offset: -2, x: -760, scale: 0.58, opacity: 0.25, z: 0 },
+  { offset: -1, x: -435, scale: 0.80, opacity: 0.65, z: 1 },
   { offset:  0, x:    0, scale: 1.00, opacity: 1.00, z: 3 },
-  { offset:  1, x:  280, scale: 0.80, opacity: 0.65, z: 1 },
-  { offset:  2, x:  530, scale: 0.58, opacity: 0.25, z: 0 },
+  { offset:  1, x:  435, scale: 0.80, opacity: 0.65, z: 1 },
+  { offset:  2, x:  760, scale: 0.58, opacity: 0.25, z: 0 },
 ];
 
 function CarouselCard({ show, isCenter }: { show: Show; isCenter: boolean }) {
@@ -30,7 +30,7 @@ function CarouselCard({ show, isCenter }: { show: Show; isCenter: boolean }) {
   return (
     <Link
       to={`/show/${show.id}`}
-      className="block w-[280px] h-[400px] rounded-2xl overflow-hidden relative select-none"
+      className="block w-[460px] h-[200px] rounded-2xl overflow-hidden relative select-none"
       tabIndex={isCenter ? 0 : -1}
       style={{ pointerEvents: isCenter ? 'auto' : 'none' }}
     >
@@ -43,24 +43,28 @@ function CarouselCard({ show, isCenter }: { show: Show; isCenter: boolean }) {
       />
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
 
-      {/* Price badge */}
-      <div className="absolute top-3 right-3 bg-hype-bg-primary/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold text-hype-text-primary">
+      {/* Date badge — top left */}
+      <div className="absolute top-3 left-3 bg-[#09090F]/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#A78BFA]">
+        {date}
+      </div>
+
+      {/* Price badge — top right */}
+      <div className="absolute top-3 right-3 bg-[#09090F]/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#F1F0FB]">
         {show.ticketPrice !== 'TBD' ? `From ${show.ticketPrice}` : 'TBD'}
       </div>
 
       {/* Bottom info */}
-      <div className="absolute bottom-0 left-0 right-0 p-5">
-        <p className="text-xs font-medium text-hype-violet mb-1 tracking-wide">
-          {date} · {show.time}
-        </p>
-        <h3 className="text-2xl font-black text-hype-text-primary uppercase leading-tight mb-1 line-clamp-2">
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <h3 className="text-2xl font-bold text-[#F1F0FB] mb-1.5 line-clamp-1">
           {show.artist.name}
         </h3>
-        <p className="text-sm text-hype-text-secondary uppercase tracking-wide truncate">
-          {show.venue.name}
-        </p>
+        <div className="flex items-center gap-3 text-sm text-[#9CA3AF]">
+          <span>{show.venue.name}</span>
+          <span>·</span>
+          <span>{show.time}</span>
+        </div>
       </div>
     </Link>
   );
@@ -101,7 +105,7 @@ export function FeaturedCarousel({ shows }: FeaturedCarouselProps) {
     <div className="hidden lg:block w-full mb-10">
       {/* Carousel stage */}
       <div
-        className="relative h-[440px] flex items-center justify-center overflow-hidden"
+        className="relative h-[260px] flex items-center justify-center overflow-hidden"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -135,7 +139,7 @@ export function FeaturedCarousel({ shows }: FeaturedCarouselProps) {
             onClick={() => goTo(i)}
             className={`rounded-full transition-all duration-300 ${
               i === activeIndex
-                ? 'w-5 h-2 bg-hype-violet'
+                ? 'w-5 h-2 bg-[#A78BFA]'
                 : 'w-2 h-2 bg-[#9CA3AF]/40 hover:bg-[#9CA3AF]/70'
             }`}
             aria-label={`Go to show ${i + 1}`}

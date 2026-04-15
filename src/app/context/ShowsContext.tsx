@@ -161,6 +161,8 @@ export function ShowsProvider({ children }: { children: ReactNode }) {
 
         _cache = enriched;
         _cacheTime = Date.now();
+        // DEBUG — remove before beta
+        console.log('[ShowsContext] genre debug', enriched.map(s => ({ name: s.artist.name, genres: s.artist.genres })));
         setShows(enriched);
       } catch {
         if (dead) return;
