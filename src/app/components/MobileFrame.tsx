@@ -7,7 +7,7 @@ interface MobileFrameProps {
 
 export function MobileFrame({ children }: MobileFrameProps) {
   return (
-    <div className="min-h-screen bg-[#09090F] flex">
+    <div className="min-h-screen bg-hype-bg-primary flex">
       {/* Sidebar — desktop only */}
       <SidebarNav />
 

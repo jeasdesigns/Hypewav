@@ -386,7 +386,7 @@ export function ShowDetailContent({ showId, onClose }: ShowDetailContentProps) {
                   className="block relative h-36 rounded-lg overflow-hidden group"
                 >
                   <img
-                    src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(show.venue.address)}&zoom=15&size=600x200&scale=2&markers=color:0xA78BFA|${encodeURIComponent(show.venue.address)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&style=feature:all|element:geometry|color:0x09090F&style=feature:all|element:labels.text.fill|color:0x9CA3AF&style=feature:all|element:labels.text.stroke|color:0x09090F&style=feature:road|element:geometry|color:0x13121E&style=feature:road.arterial|element:geometry|color:0x1A1927&style=feature:water|element:geometry|color:0x0a0a18&style=feature:poi|element:geometry|color:0x13121E`}
+                    src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(show.venue.address)}&zoom=15&size=600x200&scale=2&markers=color:0xA78BFA|${encodeURIComponent(show.venue.address)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&style=feature:all|element:geometry|color:0x0d0d1a&style=feature:all|element:labels.text.fill|color:0x9CA3AF&style=feature:all|element:labels.text.stroke|color:0x0d0d1a&style=feature:road|element:geometry|color:0x13121E&style=feature:road.arterial|element:geometry|color:0x1A1927&style=feature:water|element:geometry|color:0x0a0a18&style=feature:poi|element:geometry|color:0x13121E`}
                     alt={`Map of ${show.venue.name}`}
                     className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                     onError={e => {

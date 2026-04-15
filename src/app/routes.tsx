@@ -22,12 +22,12 @@ function RouteError() {
   const err = useRouteError() as Error | null;
   console.error('[RouteError]', err);
   return (
-    <div style={{ padding: '2rem', color: '#F1F0FB', background: '#09090F', minHeight: '100vh' }}>
+    <div style={{ padding: '2rem', color: '#F1F0FB', background: '#0d0d1a', minHeight: '100vh' }}>
       <h2 style={{ color: '#A78BFA', marginBottom: '0.5rem' }}>Something went wrong</h2>
       <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{err?.message ?? 'Unknown error'}</p>
       <button
         onClick={() => window.location.reload()}
-        style={{ marginTop: '1rem', padding: '0.5rem 1.25rem', background: '#A78BFA', color: '#09090F', border: 'none', borderRadius: '9999px', cursor: 'pointer', fontWeight: 600 }}
+        style={{ marginTop: '1rem', padding: '0.5rem 1.25rem', background: '#A78BFA', color: '#0d0d1a', border: 'none', borderRadius: '9999px', cursor: 'pointer', fontWeight: 600 }}
       >
         Reload
       </button>
