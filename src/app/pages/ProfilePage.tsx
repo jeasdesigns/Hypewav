@@ -1,13 +1,22 @@
-import { Settings, Bell, HelpCircle, LogOut, Music } from "lucide-react";
-import { Link } from "react-router";
+import { Settings, HelpCircle, LogOut, Music } from "lucide-react";
+import { Link, useNavigate } from "react-router";
 import { AppLayout } from "../components/AppLayout";
 import { HypeHeader } from "../components/HypeHeader";
 
 export function ProfilePage() {
+  const navigate = useNavigate();
+
+  const handleLogOut = () => {
+    if (confirm('Clear your saved shows and log out?')) {
+      localStorage.removeItem('hype-saved-shows');
+      navigate('/');
+    }
+  };
+
   return (
     <AppLayout>
       <HypeHeader />
-      
+
       <main className="px-4 pt-6 pb-24">
         <div className="text-center mb-8">
           <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-hype-violet to-hype-cyan flex items-center justify-center">
@@ -20,16 +29,13 @@ export function ProfilePage() {
         </div>
 
         <div className="space-y-2">
-          <button className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
+          <Link
+            to="/saved"
+            className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors"
+          >
             <Music className="w-5 h-5 text-hype-violet" />
-            <span className="flex-1 text-left">My Favorite Artists</span>
-            <span className="text-sm text-hype-text-secondary">12</span>
-          </button>
-
-          <button className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
-            <Bell className="w-5 h-5 text-hype-cyan" />
-            <span className="flex-1 text-left">Notifications</span>
-          </button>
+            <span className="flex-1 text-left">Saved Shows</span>
+          </Link>
 
           <Link to="/settings" className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
             <Settings className="w-5 h-5 text-hype-text-secondary" />
@@ -41,7 +47,10 @@ export function ProfilePage() {
             <span className="flex-1 text-left">Help</span>
           </Link>
 
-          <button className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
+          <button
+            onClick={handleLogOut}
+            className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors"
+          >
             <LogOut className="w-5 h-5 text-hype-text-secondary" />
             <span className="flex-1 text-left">Log Out</span>
           </button>

@@ -1,26 +1,42 @@
-import { useState, useEffect } from "react";
-import { Search, X, MapPin, ChevronRight, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, X, MapPin, ChevronRight } from "lucide-react";
 import { AppLayout } from "../components/AppLayout";
-import { ShowCard } from "../components/ShowCard";
+import { ShowDetailContent } from "../components/ShowDetailContent";
 import { useShows } from "../context/ShowsContext";
+import { normalizeGenre } from "../utils/genres";
+import {
+  Sheet,
+  SheetContent,
+} from "../components/ui/sheet";
 
 export function SearchPage() {
   const { shows, loading } = useShows();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-focus on arrival
+  useEffect(() => {
+    const t = setTimeout(() => inputRef.current?.focus(), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  // 300ms debounce
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(searchQuery), 300);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
-  const q = debouncedQuery.toLowerCase();
+  const q = debouncedQuery.toLowerCase().trim();
 
   const searchShows = q
-    ? shows.filter(
-        show =>
-          show.artist.name.toLowerCase().includes(q) ||
-          show.venue.name.toLowerCase().includes(q)
+    ? shows.filter(show =>
+        show.artist.name.toLowerCase().includes(q) ||
+        show.venue.name.toLowerCase().includes(q) ||
+        (Array.isArray(show.artist.genres) && show.artist.genres.some(g =>
+          g.toLowerCase().includes(q) || (normalizeGenre(g) ?? '').toLowerCase().includes(q)
+        ))
       )
     : [];
 
@@ -29,10 +45,9 @@ export function SearchPage() {
   );
 
   const searchVenues = q
-    ? allVenues.filter(
-        venue =>
-          venue.name.toLowerCase().includes(q) ||
-          venue.address.toLowerCase().includes(q)
+    ? allVenues.filter(venue =>
+        venue.name.toLowerCase().includes(q) ||
+        venue.address.toLowerCase().includes(q)
       )
     : [];
 
@@ -46,6 +61,7 @@ export function SearchPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-hype-text-secondary" />
             <input
+              ref={inputRef}
               type="text"
               placeholder="Search artists, venues..."
               value={searchQuery}
@@ -69,7 +85,7 @@ export function SearchPage() {
         {loading && (
           <div className="flex items-center justify-center h-[calc(100vh-200px)]">
             <div className="text-center gap-3 flex flex-col items-center">
-              <Loader2 className="w-8 h-8 text-hype-violet animate-spin" />
+              <div className="w-8 h-8 border-2 border-hype-violet border-t-transparent rounded-full animate-spin" />
               <p className="text-hype-text-secondary text-sm">Loading shows…</p>
             </div>
           </div>
@@ -95,19 +111,43 @@ export function SearchPage() {
               <Search className="w-16 h-16 mx-auto mb-4 text-hype-text-secondary opacity-50" />
               <h2 className="text-2xl font-bold mb-2">No Results Found</h2>
               <p className="text-hype-text-secondary">
-                Try searching for a different artist or venue
+                Try searching for a different artist, genre, or venue
               </p>
             </div>
           </div>
         )}
 
-        {/* Show Results */}
+        {/* Show Results — compact row format */}
         {!loading && searchShows.length > 0 && (
           <section className="mb-8 pt-4">
-            <h3 className="text-lg font-bold mb-4 text-hype-text-primary">Shows</h3>
-            <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-hype-text-secondary uppercase tracking-wide mb-3">
+              Shows ({searchShows.length})
+            </h3>
+            <div className="space-y-2">
               {searchShows.map(show => (
-                <ShowCard key={show.id} show={show} />
+                <button
+                  key={show.id}
+                  onClick={() => setSelectedShowId(show.id)}
+                  className="w-full flex items-center gap-3 p-3 bg-hype-bg-secondary rounded-xl hover:bg-hype-bg-hover transition-colors active:scale-[0.98] text-left"
+                >
+                  <img
+                    src={show.image}
+                    alt={show.artist.name}
+                    loading="lazy"
+                    className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-hype-text-primary truncate">{show.artist.name}</div>
+                    <div className="text-sm text-hype-text-secondary truncate">{show.venue.name}</div>
+                    <div className="text-xs text-hype-cyan mt-0.5">
+                      {new Date(show.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        weekday: 'short', month: 'short', day: 'numeric',
+                      })}
+                      {' · '}{show.ticketPrice}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-hype-text-secondary flex-shrink-0" />
+                </button>
               ))}
             </div>
           </section>
@@ -116,27 +156,43 @@ export function SearchPage() {
         {/* Venue Results */}
         {!loading && searchVenues.length > 0 && (
           <section className="mb-8 pt-4">
-            <h3 className="text-lg font-bold mb-4 text-hype-text-primary">Venues</h3>
-            <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-hype-text-secondary uppercase tracking-wide mb-3">
+              Venues ({searchVenues.length})
+            </h3>
+            <div className="space-y-2">
               {searchVenues.map(venue => (
                 <div
                   key={venue.id}
-                  className="flex items-center gap-3 p-3 bg-hype-bg-secondary rounded-xl hover:bg-hype-bg-hover transition-colors cursor-pointer group"
+                  className="flex items-center gap-3 p-3 bg-hype-bg-secondary rounded-xl"
                 >
-                  <div className="w-14 h-14 bg-gradient-to-br from-hype-violet/20 to-hype-cyan/20 rounded-lg flex items-center justify-center">
+                  <div className="w-14 h-14 bg-gradient-to-br from-hype-violet/20 to-hype-cyan/20 rounded-lg flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-6 h-6 text-hype-cyan" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-hype-text-primary truncate">{venue.name}</h4>
                     <p className="text-sm text-hype-text-secondary truncate">{venue.address}</p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-hype-text-secondary group-hover:text-hype-violet transition-colors" />
                 </div>
               ))}
             </div>
           </section>
         )}
       </main>
+
+      {/* Show Detail Sheet */}
+      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) setSelectedShowId(null); }}>
+        <SheetContent
+          side="bottom"
+          className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
+        >
+          {selectedShowId && (
+            <ShowDetailContent
+              showId={selectedShowId}
+              onClose={() => setSelectedShowId(null)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </AppLayout>
   );
 }

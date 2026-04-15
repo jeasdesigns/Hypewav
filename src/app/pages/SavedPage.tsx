@@ -2,13 +2,19 @@ import { useState } from "react";
 import { AppLayout } from "../components/AppLayout";
 import { HypeHeader } from "../components/HypeHeader";
 import { ShowCard } from "../components/ShowCard";
+import { ShowDetailContent } from "../components/ShowDetailContent";
 import { Heart, Trash2 } from "lucide-react";
 import { Link } from "react-router";
 import { useSaved } from "../context/SavedContext";
+import {
+  Sheet,
+  SheetContent,
+} from "../components/ui/sheet";
 
 export function SavedPage() {
   const { savedShows, toggleSaved } = useSaved();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -54,7 +60,7 @@ export function SavedPage() {
           <div className="space-y-4">
             {currentShows.map(show => (
               <div key={show.id} className="relative group">
-                <ShowCard show={show} />
+                <ShowCard show={show} onSelect={s => setSelectedShowId(s.id)} />
                 <button
                   onClick={() => toggleSaved(show)}
                   className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 bg-hype-warning rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -89,6 +95,21 @@ export function SavedPage() {
           </div>
         )}
       </main>
+
+      {/* Show Detail Sheet */}
+      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) setSelectedShowId(null); }}>
+        <SheetContent
+          side="bottom"
+          className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
+        >
+          {selectedShowId && (
+            <ShowDetailContent
+              showId={selectedShowId}
+              onClose={() => setSelectedShowId(null)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </AppLayout>
   );
 }

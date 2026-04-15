@@ -8,7 +8,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ShowDetailContent } from "../components/ShowDetailContent";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { ChevronRight, Zap, RefreshCw } from "lucide-react";
+import { ChevronRight, Zap, RefreshCw, Search, X } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
 import {
   Drawer,
@@ -166,7 +166,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
 function ShowsContent({ shows, filteredShows, onSelect }: { shows: Show[]; filteredShows: Show[]; onSelect: (show: Show) => void }) {
   return (
     <>
-      <FeaturedCarousel shows={shows} />
+      <FeaturedCarousel shows={shows} onSelect={onSelect} />
       <ShowSections shows={filteredShows} onSelect={onSelect} />
     </>
   );
@@ -180,6 +180,7 @@ export function DiscoverPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
   const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [searchText, setSearchText] = useState('');
   const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
 
   const isFilterActive = priceRange[0] > 0 || priceRange[1] < 300 || dateRange !== 'all';
@@ -198,7 +199,7 @@ export function DiscoverPage() {
     return ['All', ...Array.from(categories).sort()];
   }, [shows]);
 
-  // Filter by genre + price range + date range
+  // Filter by search text + genre + price range + date range
   const filteredShows = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -206,7 +207,18 @@ export function DiscoverPage() {
     if (dateRange === 'week') cutoff.setDate(today.getDate() + 7);
     else if (dateRange === 'month') cutoff.setDate(today.getDate() + 30);
 
+    const q = searchText.toLowerCase().trim();
+
     return shows.filter(show => {
+      // Text search across artist, venue, genre
+      if (q) {
+        const matchesText =
+          show.artist.name.toLowerCase().includes(q) ||
+          show.venue.name.toLowerCase().includes(q) ||
+          (Array.isArray(show.artist.genres) && show.artist.genres.some(g => g.toLowerCase().includes(q)));
+        if (!matchesText) return false;
+      }
+
       // Genre filter
       if (selectedGenre !== 'All') {
         const matchesGenre = Array.isArray(show?.artist?.genres) &&
@@ -226,7 +238,7 @@ export function DiscoverPage() {
 
       return true;
     });
-  }, [shows, selectedGenre, priceRange, dateRange]);
+  }, [shows, searchText, selectedGenre, priceRange, dateRange]);
 
   const hasShows = shows.length > 0;
   const hasFiltered = filteredShows.length > 0;
@@ -237,8 +249,30 @@ export function DiscoverPage() {
         <HypeHeader onFilterClick={() => setFilterOpen(true)} filterActive={isFilterActive} />
       </div>
 
+      {/* Search bar */}
+      <div className="px-4 pt-3 pb-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-hype-text-secondary pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search artists, venues..."
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            className="w-full bg-hype-bg-secondary text-hype-text-primary placeholder:text-hype-text-secondary pl-9 pr-9 py-2.5 rounded-xl text-sm border border-transparent focus:border-hype-violet focus:outline-none transition-colors"
+          />
+          {searchText && (
+            <button
+              onClick={() => setSearchText('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-hype-text-secondary hover:text-hype-text-primary"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Genre filter — isolated scroll container, no negative margins */}
-      <div className="py-4 border-b border-hype-bg-secondary">
+      <div className="py-3 border-b border-hype-bg-secondary">
         <div className="px-4">
           <GenreFilter
             selectedGenre={selectedGenre}
@@ -292,8 +326,8 @@ export function DiscoverPage() {
             <div className="w-16 h-16 rounded-full bg-hype-bg-secondary flex items-center justify-center mb-2">
               <span className="text-3xl">🎵</span>
             </div>
-            <h3 className="text-xl font-bold text-hype-text-primary mb-2">No {selectedGenre} shows right now</h3>
-            <p className="text-hype-text-secondary text-sm max-w-xs">Nothing's playing in that genre at the moment. Try a different one or check back soon.</p>
+            <h3 className="text-xl font-bold text-hype-text-primary mb-2">No shows found</h3>
+            <p className="text-hype-text-secondary text-sm max-w-xs">Try adjusting your search or filters.</p>
             <RefreshButton onRefresh={refresh} />
           </div>
         )}
