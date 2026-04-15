@@ -15,7 +15,9 @@ export function ProfilePage() {
 
   return (
     <AppLayout>
-      <HypeHeader />
+      <div className="lg:hidden">
+        <HypeHeader />
+      </div>
 
       <main className="px-4 pt-6 pb-24">
         <div className="text-center mb-8">

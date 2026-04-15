@@ -28,7 +28,9 @@ export function SavedPage() {
 
   return (
     <AppLayout>
-      <HypeHeader />
+      <div className="lg:hidden">
+        <HypeHeader />
+      </div>
 
       {/* Tab Bar */}
       <div className="border-b border-hype-bg-secondary bg-hype-bg-primary">

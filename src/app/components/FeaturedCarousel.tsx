@@ -29,12 +29,16 @@ function CarouselCard({ show, isCenter, onSelect }: { show: Show; isCenter: bool
 
   const inner = (
     <>
-      <img
-        src={show.image}
-        alt={show.artist.name}
-        className="absolute inset-0 w-full h-full object-cover"
-        draggable={false}
-      />
+      <div className="absolute inset-0 bg-gradient-to-br from-hype-violet/20 to-hype-bg-secondary">
+        {show.image && (
+          <img
+            src={show.image}
+            alt={show.artist.name}
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+        )}
+      </div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
       <div className="absolute top-3 left-3 bg-hype-bg-primary/80 px-3 py-1.5 rounded-lg text-xs font-semibold text-hype-violet">
         {date}
