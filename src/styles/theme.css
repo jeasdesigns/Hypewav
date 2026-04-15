@@ -43,9 +43,11 @@
   /* Hype.Wav Design System Colors */
   --hype-bg-primary: #09090F;
   --hype-bg-secondary: #13121E;
+  --hype-bg-hover: #1A1927;
   --hype-text-primary: #F1F0FB;
   --hype-text-secondary: #9CA3AF;
   --hype-violet: #A78BFA;
+  --hype-violet-hover: #9F7FEA;
   --hype-cyan: #67E8F9;
   --hype-success: #10B981;
   --hype-warning: #F59E0B;
@@ -127,6 +129,18 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Hype.Wav Design System */
+  --color-hype-bg-primary: var(--hype-bg-primary);
+  --color-hype-bg-secondary: var(--hype-bg-secondary);
+  --color-hype-bg-hover: var(--hype-bg-hover);
+  --color-hype-text-primary: var(--hype-text-primary);
+  --color-hype-text-secondary: var(--hype-text-secondary);
+  --color-hype-violet: var(--hype-violet);
+  --color-hype-violet-hover: var(--hype-violet-hover);
+  --color-hype-cyan: var(--hype-cyan);
+  --color-hype-success: var(--hype-success);
+  --color-hype-warning: var(--hype-warning);
 }
 
 @layer base {

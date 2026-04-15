@@ -16,9 +16,9 @@ export function GenreFilter({ selectedGenre, onGenreChange, genres = defaultGenr
           className={`
             px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
             transition-colors duration-200 flex-shrink-0
-            ${selectedGenre === genre 
-              ? 'bg-[#A78BFA] text-[#09090F] shadow-lg shadow-[#A78BFA]/20' 
-              : 'bg-[#13121E] text-[#9CA3AF] hover:bg-[#1A1927] hover:text-[#F1F0FB]'
+            ${selectedGenre === genre
+              ? 'bg-hype-violet text-hype-bg-primary shadow-lg shadow-hype-violet/20'
+              : 'bg-hype-bg-secondary text-hype-text-secondary hover:bg-hype-bg-hover hover:text-hype-text-primary'
             }
           `}
         >

@@ -9,7 +9,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, showBottomNav = true, floatingAction }: AppLayoutProps) {
   return (
-    <div className="relative flex flex-col min-h-screen bg-[#09090F] text-[#F1F0FB]">
+    <div className="relative flex flex-col min-h-screen bg-hype-bg-primary text-hype-text-primary">
       <div className="flex-1 pb-20 lg:pb-0">
         {children}
       </div>

@@ -24,14 +24,14 @@ export function SavedPage() {
       <HypeHeader />
       
       {/* Tab Bar */}
-      <div className="border-b border-[#13121E] bg-[#09090F]">
+      <div className="border-b border-hype-bg-secondary bg-hype-bg-primary">
         <div className="flex gap-2 px-4 py-3">
           <button
             onClick={() => setActiveTab('upcoming')}
             className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'upcoming'
-                ? 'bg-[#A78BFA] text-[#09090F]'
-                : 'bg-transparent text-[#9CA3AF] hover:bg-[#13121E] hover:text-[#F1F0FB]'
+                ? 'bg-hype-violet text-hype-bg-primary'
+                : 'bg-transparent text-hype-text-secondary hover:bg-hype-bg-secondary hover:text-hype-text-primary'
             }`}
           >
             Upcoming
@@ -40,8 +40,8 @@ export function SavedPage() {
             onClick={() => setActiveTab('past')}
             className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'past'
-                ? 'bg-[#A78BFA] text-[#09090F]'
-                : 'bg-transparent text-[#9CA3AF] hover:bg-[#13121E] hover:text-[#F1F0FB]'
+                ? 'bg-hype-violet text-hype-bg-primary'
+                : 'bg-transparent text-hype-text-secondary hover:bg-hype-bg-secondary hover:text-hype-text-primary'
             }`}
           >
             Past
@@ -58,10 +58,10 @@ export function SavedPage() {
                 <ShowCard show={show} />
                 {/* Swipe-to-delete hint on hover */}
                 <button 
-                  className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 bg-[#F59E0B] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 bg-hype-warning rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   aria-label="Remove from saved"
                 >
-                  <Trash2 className="w-5 h-5 text-[#09090F]" />
+                  <Trash2 className="w-5 h-5 text-hype-bg-primary" />
                 </button>
               </div>
             ))}
@@ -70,11 +70,11 @@ export function SavedPage() {
           /* Empty State */
           <div className="flex items-center justify-center h-[calc(100vh-300px)]">
             <div className="text-center px-6">
-              <Heart className="w-16 h-16 mx-auto mb-4 text-[#A78BFA] opacity-50" />
+              <Heart className="w-16 h-16 mx-auto mb-4 text-hype-violet opacity-50" />
               <h2 className="text-2xl font-bold mb-2">
                 {activeTab === 'upcoming' ? 'No Saved Shows' : 'No Past Shows'}
               </h2>
-              <p className="text-[#9CA3AF] max-w-sm">
+              <p className="text-hype-text-secondary max-w-sm">
                 {activeTab === 'upcoming' 
                   ? 'Start saving shows you want to attend and they\'ll appear here'
                   : 'Shows you\'ve attended will appear here'

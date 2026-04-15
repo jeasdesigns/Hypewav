@@ -351,7 +351,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **Acceptance Criteria:**
 - [ ] All design tokens (violet/cyan, typography, spacing) are live in the codebase and rendering correctly across all components
-- [ ] All components (Button, Badge, HeatBadge, GenrePill, TabList, BottomNav, Card) render correctly on both mobile and web viewports
+- [ ] All components (Button, Badge, GenreFilter, BottomNav, Card) render correctly on both mobile and web viewports
 - [ ] Bottom navigation routes correctly to placeholder pages for all four journeys (Discover, Search, Favorites, Profile)
 - [ ] A merge to `main` triggers a successful Cloudflare Pages deployment — confirmed with a live URL
 - [ ] The Cloudflare Worker responds correctly to an artist name query and returns expected Spotify data
@@ -670,9 +670,7 @@ This section captures the gaps identified between production and the PRD spec du
 |---|---|---|
 | `Button` | Primary and secondary actions | All screens |
 | `Badge` | Status labels | Cards, modal |
-| `HeatBadge` | Genre tags | Artist Modal (M3) |
-| `GenrePill` | Genre filter chips | Discover (M2), Search (M4) |
-| `TabList` | Segmented controls | Future — v2 date filtering |
+| `GenreFilter` | Genre filter chip strip | Discover (M2), Search (M4) |
 | `BottomNav` | Primary app navigation | All screens |
 | `Card` | Concert listing item | Discover (M2), Favorites (M5) |
 

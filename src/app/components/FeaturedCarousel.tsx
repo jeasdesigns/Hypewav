@@ -46,19 +46,19 @@ function CarouselCard({ show, isCenter }: { show: Show; isCenter: boolean }) {
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
 
       {/* Price badge */}
-      <div className="absolute top-3 right-3 bg-[#09090F]/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold text-[#F1F0FB]">
+      <div className="absolute top-3 right-3 bg-hype-bg-primary/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold text-hype-text-primary">
         {show.ticketPrice !== 'TBD' ? `From ${show.ticketPrice}` : 'TBD'}
       </div>
 
       {/* Bottom info */}
       <div className="absolute bottom-0 left-0 right-0 p-5">
-        <p className="text-xs font-medium text-[#A78BFA] mb-1 tracking-wide">
+        <p className="text-xs font-medium text-hype-violet mb-1 tracking-wide">
           {date} · {show.time}
         </p>
-        <h3 className="text-2xl font-black text-[#F1F0FB] uppercase leading-tight mb-1 line-clamp-2">
+        <h3 className="text-2xl font-black text-hype-text-primary uppercase leading-tight mb-1 line-clamp-2">
           {show.artist.name}
         </h3>
-        <p className="text-sm text-[#9CA3AF] uppercase tracking-wide truncate">
+        <p className="text-sm text-hype-text-secondary uppercase tracking-wide truncate">
           {show.venue.name}
         </p>
       </div>
@@ -135,7 +135,7 @@ export function FeaturedCarousel({ shows }: FeaturedCarouselProps) {
             onClick={() => goTo(i)}
             className={`rounded-full transition-all duration-300 ${
               i === activeIndex
-                ? 'w-5 h-2 bg-[#A78BFA]'
+                ? 'w-5 h-2 bg-hype-violet'
                 : 'w-2 h-2 bg-[#9CA3AF]/40 hover:bg-[#9CA3AF]/70'
             }`}
             aria-label={`Go to show ${i + 1}`}

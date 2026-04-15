@@ -12,7 +12,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="sticky bottom-0 left-0 right-0 bg-[#09090F]/95 backdrop-blur-xl border-t border-[#13121E] z-50 mt-auto lg:hidden">
+    <nav className="sticky bottom-0 left-0 right-0 bg-hype-bg-primary/95 backdrop-blur-xl border-t border-hype-bg-secondary z-50 mt-auto lg:hidden">
       <div className="max-w-md mx-auto px-4">
         <div className="flex justify-around items-center h-20 pb-6">
           {navItems.map(({ path, icon: Icon, label }) => {
@@ -23,18 +23,18 @@ export function BottomNav() {
                 to={path}
                 className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center group"
               >
-                <Icon 
+                <Icon
                   className={`w-6 h-6 transition-colors ${
-                    isActive 
-                      ? 'text-[#A78BFA]' 
-                      : 'text-[#9CA3AF] group-hover:text-[#F1F0FB]'
+                    isActive
+                      ? 'text-hype-violet'
+                      : 'text-hype-text-secondary group-hover:text-hype-text-primary'
                   }`}
                 />
-                <span 
+                <span
                   className={`text-xs transition-colors ${
-                    isActive 
-                      ? 'text-[#A78BFA]' 
-                      : 'text-[#9CA3AF] group-hover:text-[#F1F0FB]'
+                    isActive
+                      ? 'text-hype-violet'
+                      : 'text-hype-text-secondary group-hover:text-hype-text-primary'
                   }`}
                 >
                   {label}
