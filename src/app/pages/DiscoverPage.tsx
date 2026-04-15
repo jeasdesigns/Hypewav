@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useShowSheet } from "../hooks/useShowSheet";
 import { HypeHeader } from "../components/HypeHeader";
 import { GenreFilter } from "../components/GenreFilter";
 import { ShowCard } from "../components/ShowCard";
@@ -181,7 +182,7 @@ export function DiscoverPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
   const [dateRange, setDateRange] = useState<DateRange>('all');
   const [searchText, setSearchText] = useState('');
-  const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
+  const { selectedShowId, displayedShowId, openShow, closeShow } = useShowSheet();
 
   const isFilterActive = priceRange[0] > 0 || priceRange[1] < 300 || dateRange !== 'all';
 
@@ -317,7 +318,7 @@ export function DiscoverPage() {
 
         {hasShows && hasFiltered && (
           <ErrorBoundary>
-            <ShowsContent shows={shows} filteredShows={filteredShows} onSelect={show => setSelectedShowId(show.id)} />
+            <ShowsContent shows={shows} filteredShows={filteredShows} onSelect={show => openShow(show.id)} />
           </ErrorBoundary>
         )}
 
@@ -334,15 +335,15 @@ export function DiscoverPage() {
 
       </main>
       {/* Show Detail Sheet */}
-      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) setSelectedShowId(null); }}>
+      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) closeShow(); }}>
         <SheetContent
           side="bottom"
           className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
         >
-          {selectedShowId && (
+          {displayedShowId && (
             <ShowDetailContent
-              showId={selectedShowId}
-              onClose={() => setSelectedShowId(null)}
+              showId={displayedShowId}
+              onClose={closeShow}
             />
           )}
         </SheetContent>

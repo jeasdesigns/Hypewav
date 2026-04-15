@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useShowSheet } from "../hooks/useShowSheet";
 import { AppLayout } from "../components/AppLayout";
 import { HypeHeader } from "../components/HypeHeader";
 import { ShowCard } from "../components/ShowCard";
@@ -14,7 +15,7 @@ import {
 export function SavedPage() {
   const { savedShows, toggleSaved } = useSaved();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
-  const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
+  const { selectedShowId, displayedShowId, openShow, closeShow } = useShowSheet();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -60,7 +61,7 @@ export function SavedPage() {
           <div className="space-y-4">
             {currentShows.map(show => (
               <div key={show.id} className="relative group">
-                <ShowCard show={show} onSelect={s => setSelectedShowId(s.id)} />
+                <ShowCard show={show} onSelect={s => openShow(s.id)} />
                 <button
                   onClick={() => toggleSaved(show)}
                   className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 bg-hype-warning rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -97,15 +98,15 @@ export function SavedPage() {
       </main>
 
       {/* Show Detail Sheet */}
-      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) setSelectedShowId(null); }}>
+      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) closeShow(); }}>
         <SheetContent
           side="bottom"
           className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
         >
-          {selectedShowId && (
+          {displayedShowId && (
             <ShowDetailContent
-              showId={selectedShowId}
-              onClose={() => setSelectedShowId(null)}
+              showId={displayedShowId}
+              onClose={closeShow}
             />
           )}
         </SheetContent>

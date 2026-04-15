@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useShowSheet } from "../hooks/useShowSheet";
 import { Search, X, MapPin, ChevronRight } from "lucide-react";
 import { AppLayout } from "../components/AppLayout";
 import { ShowDetailContent } from "../components/ShowDetailContent";
@@ -13,7 +14,7 @@ export function SearchPage() {
   const { shows, loading } = useShows();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
+  const { selectedShowId, displayedShowId, openShow, closeShow } = useShowSheet();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus on arrival
@@ -127,7 +128,7 @@ export function SearchPage() {
               {searchShows.map(show => (
                 <button
                   key={show.id}
-                  onClick={() => setSelectedShowId(show.id)}
+                  onClick={() => openShow(show.id)}
                   className="w-full flex items-center gap-3 p-3 bg-hype-bg-secondary rounded-xl hover:bg-hype-bg-hover transition-colors active:scale-[0.98] text-left"
                 >
                   <img
@@ -180,15 +181,15 @@ export function SearchPage() {
       </main>
 
       {/* Show Detail Sheet */}
-      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) setSelectedShowId(null); }}>
+      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) closeShow(); }}>
         <SheetContent
           side="bottom"
           className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
         >
-          {selectedShowId && (
+          {displayedShowId && (
             <ShowDetailContent
-              showId={selectedShowId}
-              onClose={() => setSelectedShowId(null)}
+              showId={displayedShowId}
+              onClose={closeShow}
             />
           )}
         </SheetContent>
