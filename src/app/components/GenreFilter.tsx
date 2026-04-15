@@ -1,12 +1,10 @@
-import { genres as defaultGenres } from "../data/mockData";
-
 interface GenreFilterProps {
   selectedGenre: string;
   onGenreChange: (genre: string) => void;
-  genres?: string[];
+  genres: string[];
 }
 
-export function GenreFilter({ selectedGenre, onGenreChange, genres = defaultGenres }: GenreFilterProps) {
+export function GenreFilter({ selectedGenre, onGenreChange, genres }: GenreFilterProps) {
   return (
     <div className="flex gap-2 overflow-x-scroll pb-2 scrollbar-hide">
       {genres.map((genre) => (
