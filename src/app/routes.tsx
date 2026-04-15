@@ -1,7 +1,6 @@
 import { createBrowserRouter, useRouteError } from "react-router";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import { ShowDetailPage } from "./pages/ShowDetailPage";
-import { ArtistProfilePage } from "./pages/ArtistProfilePage";
 import { SavedPage } from "./pages/SavedPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SearchPage } from "./pages/SearchPage";
@@ -48,10 +47,6 @@ export const router = createBrowserRouter([
       {
         path: "show/:id",
         Component: ShowDetailPage,
-      },
-      {
-        path: "artist/:id",
-        Component: ArtistProfilePage,
       },
       {
         path: "search",
