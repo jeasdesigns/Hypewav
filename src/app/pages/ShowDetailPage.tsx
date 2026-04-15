@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink } from 'lucide-react';
 import { useShows } from '../context/ShowsContext';
+import { useSaved } from '../context/SavedContext';
 import { fetchEventById } from '../services/ticketmasterService';
 import { fetchArtistByName, fetchTopTracks, SpotifyTrack } from '../services/spotifyService';
 import { AppLayout } from '../components/AppLayout';
@@ -11,6 +12,7 @@ import { Show } from '../data/mockData';
 export function ShowDetailPage() {
   const { id } = useParams();
   const { shows } = useShows();
+  const { isSaved, toggleSaved } = useSaved();
 
   const [show, setShow] = useState<Show | null>(null);
   const [topTracks, setTopTracks] = useState<SpotifyTrack[]>([]);
@@ -194,8 +196,12 @@ export function ShowDetailPage() {
               <button className="w-10 h-10 bg-hype-bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-hype-bg-primary transition-colors active:scale-95 border border-hype-bg-secondary">
                 <Share2 className="w-5 h-5" />
               </button>
-              <button className="w-10 h-10 bg-hype-bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-hype-bg-primary transition-colors active:scale-95 border border-hype-bg-secondary">
-                <Heart className="w-5 h-5" />
+              <button
+                onClick={() => show && toggleSaved(show)}
+                className="w-10 h-10 bg-hype-bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-hype-bg-primary transition-colors active:scale-95 border border-hype-bg-secondary"
+                aria-label={show && isSaved(show.id) ? 'Remove from saved' : 'Save show'}
+              >
+                <Heart className={`w-5 h-5 transition-colors ${show && isSaved(show.id) ? 'fill-hype-violet text-hype-violet' : ''}`} />
               </button>
             </div>
           </div>
