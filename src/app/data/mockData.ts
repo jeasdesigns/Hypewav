@@ -6,7 +6,7 @@ export interface Artist {
   followers: number;
   monthlyListeners?: number;
   popularity: number;
-  bio: string;
+  bio?: string;
   topTracks: Track[];
   spotifyUrl?: string;
   spotifyId?: string;

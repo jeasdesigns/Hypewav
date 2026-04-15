@@ -52,10 +52,10 @@ function buildShow(event: TMEvent, spotify: SpotifyArtist | null): Show {
     spotifyId: spotify?.id,
     name: artistName,
     image: tmImageUrl(event),
-    genres: Array.isArray(spotify?.genres) ? spotify!.genres : [],
+    genres: Array.isArray(spotify?.genres) ? spotify!.genres.slice(0, 5) : [],
     followers: spotify?.followers?.total ?? 0,
     popularity: spotify?.popularity ?? 50,
-    bio: '',
+    bio: undefined,
     topTracks: [] as Track[],
     spotifyUrl: spotify?.external_urls?.spotify ?? attraction?.externalLinks?.spotify?.[0]?.url,
     instagramUrl: attraction?.externalLinks?.instagram?.[0]?.url,
@@ -161,8 +161,6 @@ export function ShowsProvider({ children }: { children: ReactNode }) {
 
         _cache = enriched;
         _cacheTime = Date.now();
-        // DEBUG — remove before beta
-        console.log('[ShowsContext] genre debug', enriched.map(s => ({ name: s.artist.name, genres: s.artist.genres })));
         setShows(enriched);
       } catch {
         if (dead) return;

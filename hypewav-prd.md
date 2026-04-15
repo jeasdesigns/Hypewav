@@ -39,7 +39,7 @@
 
 ### Product Definition
 
-Hype.Wav is a live music discovery application launching on both mobile and web. It aggregates concert listings and enriches them with deep artist context — images, genres, biographies, and audio previews — so that every show on the screen is also an invitation to discover an artist the user may never have encountered on their own.
+Hype.Wav is a live music discovery application launching on both mobile and web. It aggregates concert listings and enriches them with deep artist context — images, genres, and audio previews — so that every show on the screen is also an invitation to discover an artist the user may never have encountered on their own.
 
 The product is launching in Seattle as a pilot market — one of the most active live music cities in the United States — to validate the model before expanding to additional cities.
 
@@ -92,7 +92,7 @@ SMART goals are Specific, Measurable, Achievable, Relevant, and Time-bound. Ever
 
 ### Goal 2 — Surface artist depth that enables genuine discovery
 
-**Specific:** Every concert listing exposes artist image, genre tags, biography, top tracks with audio previews, and lowest ticket price — without requiring the user to search elsewhere.
+**Specific:** Every concert listing exposes artist image, genre tags, top tracks with audio previews, and lowest ticket price — without requiring the user to search elsewhere.
 **Measurable:** ≥ 85% of listed artists have Spotify image and genre data populated correctly.
 **Achievable:** Cloudflare Worker handles Spotify API proxying with artist name-based lookup and confidence scoring.
 **Relevant:** Directly addresses the pain point of no in-app artist exploration.
@@ -370,7 +370,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **Assumptions:**
 - Ticketmaster API returns `priceRanges`, `classifications`, `images`, and `url` fields for pilot market events
-- Spotify API, via the Cloudflare Worker, returns artist image, bio, genres, and top tracks for ≥ 85% of Ticketmaster-listed artists
+- Spotify API, via the Cloudflare Worker, returns artist image, genres, and top tracks for ≥ 85% of Ticketmaster-listed artists
 - `previewUrl` may be `null` for some tracks and must be treated as an optional field, not a required one
 
 **Not Doing:**
@@ -380,8 +380,8 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **Acceptance Criteria:**
 - [ ] Ticketmaster API correctly returns and normalizes: event name, date, venue name, venue address, lowest ticket price, genre classification, artist image, and ticket URL
-- [ ] Spotify Worker correctly returns and normalizes: artist image, biography (truncated to 280 chars), genre array (max 5), top 5 tracks with preview URLs
-- [ ] `null` cases for image, bio, preview URL, and price are typed correctly and handled without throwing exceptions
+- [ ] Spotify Worker correctly returns and normalizes: artist image, genre array (max 5), top 5 tracks with preview URLs
+- [ ] `null` cases for image, preview URL, and price are typed correctly and handled without throwing exceptions
 - [ ] All data is sourced from live API responses — no hardcoded or mock data in production
 - [ ] No M1 errors propagate to calling code as unhandled exceptions
 
@@ -431,7 +431,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 ### Feature M3 — Artist Modal
 
-**Feature:** A full artist profile overlay — bio, genre tags, top tracks with audio previews, and a ticket CTA.
+**Feature:** A full artist profile overlay — genre tags, top tracks with audio previews, and a ticket CTA.
 
 **Description:** The Artist Modal is the depth layer of the discovery experience. When a user taps a concert card on the Discover page, the modal slides up and immerses them in the artist's world: a large hero image, genre tags, a biography, and a list of top tracks — each with a play button that triggers a 30-second Spotify audio preview. A "Get Tickets" CTA links directly to the Ticketmaster listing. A save button lets the user add the concert to Favorites (M5). M3 is where a user goes from curious to committed.
 
@@ -456,7 +456,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **Acceptance Criteria:**
 - [ ] Tapping a concert card on M2 opens the modal as a slide-up overlay
-- [ ] Modal correctly displays: artist hero image, name, genre tags (up to 5), biography, top 5 tracks, upcoming shows, and ticket CTA
+- [ ] Modal correctly displays: artist hero image, name, genre tags (up to 5), top 5 tracks, upcoming shows, and ticket CTA
 - [ ] Each track row shows a play/pause button — tapping it plays the 30-second Spotify preview
 - [ ] Only one track plays at a time — starting a new track stops the previous one
 - [ ] Closing the modal stops any active audio playback
@@ -747,6 +747,7 @@ v3.x.x  — Community + Social
 | OQ-7 | Does the map pin on a concert card open an inline map preview or link out to Google Maps / Apple Maps? | Product | Open |
 | OQ-8 | Cyan accent color — should production align to PRD spec `#22d3ee` (Tailwind cyan-400), or should the PRD be updated to match production `#67E8F9` (cyan-300)? | Design | Open |
 | OQ-9 | Background primary color — should production align to PRD spec `#0d0d1a`, or should the PRD be updated to match production `#09090F`? | Design | Open |
+| OQ-10 | Artist biography — Spotify API does not return biography data. Resolved: bio field dropped from v1 entirely. No third-party bio API in scope. M1 and M3 specs updated accordingly. | Engineering | Resolved |
 
 ---
 
