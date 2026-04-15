@@ -1,4 +1,5 @@
-import { User, Settings, Bell, HelpCircle, LogOut, Music } from "lucide-react";
+import { Settings, Bell, HelpCircle, LogOut, Music } from "lucide-react";
+import { Link } from "react-router";
 import { AppLayout } from "../components/AppLayout";
 import { HypeHeader } from "../components/HypeHeader";
 
@@ -30,15 +31,15 @@ export function ProfilePage() {
             <span className="flex-1 text-left">Notifications</span>
           </button>
 
-          <button className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
+          <Link to="/settings" className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
             <Settings className="w-5 h-5 text-hype-text-secondary" />
             <span className="flex-1 text-left">Settings</span>
-          </button>
+          </Link>
 
-          <button className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
+          <Link to="/help" className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
             <HelpCircle className="w-5 h-5 text-hype-text-secondary" />
             <span className="flex-1 text-left">Help</span>
-          </button>
+          </Link>
 
           <button className="w-full flex items-center gap-3 bg-hype-bg-secondary rounded-xl p-4 hover:bg-hype-bg-hover transition-colors">
             <LogOut className="w-5 h-5 text-hype-text-secondary" />

@@ -5,6 +5,8 @@ import { ArtistProfilePage } from "./pages/ArtistProfilePage";
 import { SavedPage } from "./pages/SavedPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SearchPage } from "./pages/SearchPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { HelpPage } from "./pages/HelpPage";
 import { DesignSystemPage } from "./pages/DesignSystemPage";
 import { DesignTokensPage } from "./pages/design-system/DesignTokensPage";
 import { ComponentsPage } from "./pages/design-system/ComponentsPage";
@@ -63,42 +65,52 @@ export const router = createBrowserRouter([
         path: "profile",
         Component: ProfilePage,
       },
+      {
+        path: "settings",
+        Component: SettingsPage,
+      },
+      {
+        path: "help",
+        Component: HelpPage,
+      },
     ],
   },
-  {
-    path: "/discover-option-a-variations",
-    Component: DiscoverOptionAVariationsPage,
-  },
-  {
-    path: "/design-pattern-mockups",
-    Component: DesignPatternMockupsPage,
-  },
-  {
-    path: "/show-detail-mockups",
-    Component: ShowDetailMockupsPage,
-  },
-  {
-    path: "/design-system",
-    Component: DesignSystemPage,
-  },
-  {
-    path: "/design-system/tokens",
-    Component: DesignTokensPage,
-  },
-  {
-    path: "/design-system/components",
-    Component: ComponentsPage,
-  },
-  {
-    path: "/design-system/layout",
-    Component: LayoutPage,
-  },
-  {
-    path: "/design-system/pages",
-    Component: PageMockupsPage,
-  },
-  {
-    path: "/design-system/figma-guide",
-    Component: FigmaGuidePage,
-  },
+  ...(import.meta.env.DEV ? [
+    {
+      path: "/discover-option-a-variations",
+      Component: DiscoverOptionAVariationsPage,
+    },
+    {
+      path: "/design-pattern-mockups",
+      Component: DesignPatternMockupsPage,
+    },
+    {
+      path: "/show-detail-mockups",
+      Component: ShowDetailMockupsPage,
+    },
+    {
+      path: "/design-system",
+      Component: DesignSystemPage,
+    },
+    {
+      path: "/design-system/tokens",
+      Component: DesignTokensPage,
+    },
+    {
+      path: "/design-system/components",
+      Component: ComponentsPage,
+    },
+    {
+      path: "/design-system/layout",
+      Component: LayoutPage,
+    },
+    {
+      path: "/design-system/pages",
+      Component: PageMockupsPage,
+    },
+    {
+      path: "/design-system/figma-guide",
+      Component: FigmaGuidePage,
+    },
+  ] : []),
 ]);

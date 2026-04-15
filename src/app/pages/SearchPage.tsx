@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, X, MapPin, ChevronRight, Loader2 } from "lucide-react";
 import { AppLayout } from "../components/AppLayout";
 import { ShowCard } from "../components/ShowCard";
@@ -7,8 +7,14 @@ import { useShows } from "../context/ShowsContext";
 export function SearchPage() {
   const { shows, loading } = useShows();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  const q = searchQuery.toLowerCase();
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  const q = debouncedQuery.toLowerCase();
 
   const searchShows = q
     ? shows.filter(

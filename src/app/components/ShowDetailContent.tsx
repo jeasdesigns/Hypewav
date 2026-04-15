@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router';
-import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink, Play, Pause } from 'lucide-react';
+import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink, Play, Pause, Check } from 'lucide-react';
 import { useShows } from '../context/ShowsContext';
 import { useSaved } from '../context/SavedContext';
 import { fetchEventById } from '../services/ticketmasterService';
@@ -22,6 +22,7 @@ export function ShowDetailContent({ showId, onClose }: ShowDetailContentProps) {
   const [loading, setLoading] = useState(true);
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [shareCopied, setShareCopied] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Stop audio on unmount
@@ -58,6 +59,18 @@ export function ShowDetailContent({ showId, onClose }: ShowDetailContentProps) {
     setPlayingTrackId(track.id);
     setProgress(0);
   }, [playingTrackId]);
+
+  const handleShare = useCallback(async (showId: string, artistName: string, venueName: string) => {
+    const url = `${window.location.origin}/show/${showId}`;
+    const text = `Check out ${artistName} at ${venueName}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: artistName, text, url }); } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  }, []);
 
   const showsRef = useRef(shows);
   useEffect(() => { showsRef.current = shows; }, [shows]);
@@ -247,8 +260,15 @@ export function ShowDetailContent({ showId, onClose }: ShowDetailContentProps) {
               <h1 className="text-3xl font-bold mb-2">{show.artist.name}</h1>
             </div>
             <div className="flex gap-2 flex-shrink-0">
-              <button className="w-10 h-10 bg-hype-bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-hype-bg-primary transition-colors active:scale-95 border border-hype-bg-secondary">
-                <Share2 className="w-5 h-5" />
+              <button
+                onClick={() => handleShare(show.id, show.artist.name, show.venue.name)}
+                className="w-10 h-10 bg-hype-bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-hype-bg-primary transition-colors active:scale-95 border border-hype-bg-secondary"
+                aria-label="Share show"
+              >
+                {shareCopied
+                  ? <Check className="w-5 h-5 text-hype-success" />
+                  : <Share2 className="w-5 h-5" />
+                }
               </button>
               <button
                 onClick={() => show && toggleSaved(show)}

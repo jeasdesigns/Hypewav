@@ -16,6 +16,7 @@ export function ShowCard({ show, onSelect }: ShowCardProps) {
         <img
           src={show.image}
           alt={show.artist.name}
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {/* Gradient Overlay for Text Legibility */}
