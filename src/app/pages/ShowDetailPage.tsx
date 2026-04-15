@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams } from 'react-router';
-import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink } from 'lucide-react';
+import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink, Play, Pause } from 'lucide-react';
 import { useShows } from '../context/ShowsContext';
 import { useSaved } from '../context/SavedContext';
 import { fetchEventById } from '../services/ticketmasterService';
@@ -18,6 +18,45 @@ export function ShowDetailPage() {
   const [topTracks, setTopTracks] = useState<SpotifyTrack[]>([]);
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Stop audio on unmount
+  useEffect(() => {
+    return () => { audioRef.current?.pause(); };
+  }, []);
+
+  const playTrack = useCallback((track: SpotifyTrack) => {
+    if (!track.preview_url) return;
+
+    if (playingTrackId === track.id) {
+      audioRef.current?.pause();
+      setPlayingTrackId(null);
+      return;
+    }
+
+    // Stop any current track
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+
+    const audio = new Audio(track.preview_url);
+    audioRef.current = audio;
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) setProgress((audio.currentTime / audio.duration) * 100);
+    });
+    audio.addEventListener('ended', () => {
+      setPlayingTrackId(null);
+      setProgress(0);
+    });
+
+    audio.play().catch(() => setPlayingTrackId(null));
+    setPlayingTrackId(track.id);
+    setProgress(0);
+  }, [playingTrackId]);
 
   // Keep shows in a ref so the effect doesn't re-run on every Spotify enrichment pass
   const showsRef = useRef(shows);
@@ -430,24 +469,71 @@ export function ShowDetailPage() {
               </div>
             </div>
 
-            {/* Top Tracks — Spotify Embed */}
-            <div className="p-4">
-              <div className="text-xs text-hype-text-secondary mb-3 uppercase tracking-wide font-medium">Top Songs on Spotify</div>
-              {show.artist.spotifyId ? (
-                <iframe
-                  style={{ borderRadius: '12px' }}
-                  src={`https://open.spotify.com/embed/artist/${show.artist.spotifyId}?utm_source=generator&theme=0`}
-                  width="100%"
-                  height="500"
-                  frameBorder="0"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                  title={`${show.artist.name} on Spotify`}
-                />
-              ) : (
-                <p className="text-sm text-hype-text-secondary">Spotify data not available for this artist</p>
-              )}
-            </div>
+            {/* Top Tracks */}
+            {topTracks.length > 0 && (
+              <div className="p-4">
+                <div className="text-xs text-hype-text-secondary mb-3 uppercase tracking-wide font-medium">Top Songs</div>
+                <div className="space-y-1">
+                  {topTracks.slice(0, showAllTracks ? 10 : 5).map((track, index) => {
+                    const isPlaying = playingTrackId === track.id;
+                    const hasPreview = !!track.preview_url;
+                    return (
+                      <div key={track.id} className="group">
+                        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-hype-bg-primary/50 transition-colors">
+                          {/* Play/Pause or track number */}
+                          {hasPreview ? (
+                            <button
+                              onClick={() => playTrack(track)}
+                              className="w-8 h-8 rounded-full bg-hype-bg-primary flex items-center justify-center flex-shrink-0 hover:bg-hype-violet/20 transition-colors"
+                              aria-label={isPlaying ? 'Pause' : 'Play preview'}
+                            >
+                              {isPlaying
+                                ? <Pause className="w-4 h-4 text-hype-violet" />
+                                : <Play className="w-4 h-4 text-hype-text-secondary group-hover:text-hype-violet transition-colors" />
+                              }
+                            </button>
+                          ) : (
+                            <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs text-hype-text-secondary">{index + 1}</span>
+                            </div>
+                          )}
+
+                          {/* Track info */}
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-medium truncate ${isPlaying ? 'text-hype-violet' : 'text-hype-text-primary'}`}>
+                              {track.name}
+                            </div>
+                            {/* Progress bar — only shown when playing */}
+                            {isPlaying && (
+                              <div className="mt-1 h-0.5 bg-hype-bg-primary rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-hype-violet transition-all duration-200"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Duration */}
+                          <div className="text-xs text-hype-text-secondary flex-shrink-0">
+                            {Math.floor(track.duration_ms / 60000)}:{String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {topTracks.length > 5 && (
+                  <button
+                    onClick={() => setShowAllTracks(v => !v)}
+                    className="mt-3 text-xs text-hype-violet hover:underline w-full text-center"
+                  >
+                    {showAllTracks ? 'Show less' : `Show all ${topTracks.length} tracks`}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>{/* end right column */}
 
