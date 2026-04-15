@@ -5,9 +5,10 @@ import { ShowCard } from "../components/ShowCard";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { AppLayout } from "../components/AppLayout";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { ShowDetailContent } from "../components/ShowDetailContent";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { ChevronRight, Zap, RefreshCw, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, Zap, RefreshCw } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
 import {
   Drawer,
@@ -17,6 +18,10 @@ import {
   DrawerFooter,
 } from "../components/ui/drawer";
 import { Slider } from "../components/ui/slider";
+import {
+  Sheet,
+  SheetContent,
+} from "../components/ui/sheet";
 
 type DateRange = 'week' | 'month' | 'all';
 
@@ -49,7 +54,7 @@ function RefreshButton({ onRefresh }: { onRefresh: () => void }) {
 
 // ─── Section logic ─────────────────────────────────────────────────────────────
 
-function ShowSections({ shows }: { shows: Show[] }) {
+function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Show) => void }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -94,7 +99,7 @@ function ShowSections({ shows }: { shows: Show[] }) {
           <h2 className="text-xl font-bold text-hype-text-primary">UPCOMING SHOWS</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {shows.map(show => <ShowCard key={show.id} show={show} />)}
+          {shows.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
         </div>
       </section>
     );
@@ -158,11 +163,11 @@ function ShowSections({ shows }: { shows: Show[] }) {
 
 // ─── Main content ──────────────────────────────────────────────────────────────
 
-function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: Show[] }) {
+function ShowsContent({ shows, filteredShows, onSelect }: { shows: Show[]; filteredShows: Show[]; onSelect: (show: Show) => void }) {
   return (
     <>
       <FeaturedCarousel shows={shows} />
-      <ShowSections shows={filteredShows} />
+      <ShowSections shows={filteredShows} onSelect={onSelect} />
     </>
   );
 }
@@ -175,6 +180,7 @@ export function DiscoverPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
   const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
 
   const isFilterActive = priceRange[0] > 0 || priceRange[1] < 300 || dateRange !== 'all';
 
@@ -277,7 +283,7 @@ export function DiscoverPage() {
 
         {hasShows && hasFiltered && (
           <ErrorBoundary>
-            <ShowsContent shows={shows} filteredShows={filteredShows} />
+            <ShowsContent shows={shows} filteredShows={filteredShows} onSelect={show => setSelectedShowId(show.id)} />
           </ErrorBoundary>
         )}
 
@@ -293,6 +299,21 @@ export function DiscoverPage() {
         )}
 
       </main>
+      {/* Show Detail Sheet */}
+      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) setSelectedShowId(null); }}>
+        <SheetContent
+          side="bottom"
+          className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
+        >
+          {selectedShowId && (
+            <ShowDetailContent
+              showId={selectedShowId}
+              onClose={() => setSelectedShowId(null)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
       {/* Filter Drawer */}
       <Drawer open={filterOpen} onOpenChange={setFilterOpen}>
         <DrawerContent className="bg-hype-bg-secondary border-hype-bg-hover">
