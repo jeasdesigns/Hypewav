@@ -3,9 +3,10 @@ import { Link } from "react-router";
 
 interface HypeHeaderProps {
   onFilterClick?: () => void;
+  filterActive?: boolean;
 }
 
-export function HypeHeader({ onFilterClick }: HypeHeaderProps) {
+export function HypeHeader({ onFilterClick, filterActive = false }: HypeHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-hype-bg-secondary bg-hype-bg-primary/95 backdrop-blur-md">
       <div className="px-6 pt-4 pb-3 max-w-6xl mx-auto lg:max-w-none">
@@ -21,10 +22,17 @@ export function HypeHeader({ onFilterClick }: HypeHeaderProps) {
           </Link>
           <button
             onClick={onFilterClick}
-            className="w-11 h-11 rounded-full bg-hype-bg-secondary flex items-center justify-center hover:bg-hype-bg-hover transition-colors active:scale-95"
+            className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
+              filterActive
+                ? 'bg-hype-violet/20 hover:bg-hype-violet/30'
+                : 'bg-hype-bg-secondary hover:bg-hype-bg-hover'
+            }`}
             aria-label="Filter shows"
           >
-            <Filter className="w-5 h-5 text-hype-text-secondary" />
+            <Filter className={`w-5 h-5 ${filterActive ? 'text-hype-violet' : 'text-hype-text-secondary'}`} />
+            {filterActive && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-hype-violet" />
+            )}
           </button>
         </div>
       </div>

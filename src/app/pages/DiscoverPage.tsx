@@ -7,8 +7,23 @@ import { AppLayout } from "../components/AppLayout";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { ChevronRight, Zap, RefreshCw } from "lucide-react";
+import { ChevronRight, Zap, RefreshCw, SlidersHorizontal } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+} from "../components/ui/drawer";
+import { Slider } from "../components/ui/slider";
+
+type DateRange = 'week' | 'month' | 'all';
+
+function parsePrice(ticketPrice: string): number | null {
+  const match = ticketPrice.replace(/,/g, '').match(/\d+(\.\d+)?/);
+  return match ? parseFloat(match[0]) : null;
+}
 
 // ─── Skeletons / helpers ───────────────────────────────────────────────────────
 
@@ -157,6 +172,11 @@ function ShowsContent({ shows, filteredShows }: { shows: Show[]; filteredShows: 
 export function DiscoverPage() {
   const { shows, loading, error, refresh } = useShows();
   const [selectedGenre, setSelectedGenre] = useState("All");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
+  const [dateRange, setDateRange] = useState<DateRange>('all');
+
+  const isFilterActive = priceRange[0] > 0 || priceRange[1] < 300 || dateRange !== 'all';
 
   // Normalize raw Spotify genres → broad categories; deduplicate
   const genres = useMemo(() => {
@@ -172,16 +192,35 @@ export function DiscoverPage() {
     return ['All', ...Array.from(categories).sort()];
   }, [shows]);
 
-  // Filter by broad category — match any raw genre that normalizes to selectedGenre
+  // Filter by genre + price range + date range
   const filteredShows = useMemo(() => {
-    if (selectedGenre === 'All') return shows;
-    return shows.filter(show =>
-      Array.isArray(show?.artist?.genres) &&
-      show.artist.genres.some(g =>
-        typeof g === 'string' && normalizeGenre(g) === selectedGenre
-      )
-    );
-  }, [shows, selectedGenre]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cutoff = new Date(today);
+    if (dateRange === 'week') cutoff.setDate(today.getDate() + 7);
+    else if (dateRange === 'month') cutoff.setDate(today.getDate() + 30);
+
+    return shows.filter(show => {
+      // Genre filter
+      if (selectedGenre !== 'All') {
+        const matchesGenre = Array.isArray(show?.artist?.genres) &&
+          show.artist.genres.some(g => typeof g === 'string' && normalizeGenre(g) === selectedGenre);
+        if (!matchesGenre) return false;
+      }
+
+      // Price filter — TBD shows pass through always
+      const price = parsePrice(show.ticketPrice);
+      if (price !== null && (price < priceRange[0] || price > priceRange[1])) return false;
+
+      // Date filter
+      if (dateRange !== 'all') {
+        const showDate = new Date(show.date + 'T00:00:00');
+        if (showDate < today || showDate > cutoff) return false;
+      }
+
+      return true;
+    });
+  }, [shows, selectedGenre, priceRange, dateRange]);
 
   const hasShows = shows.length > 0;
   const hasFiltered = filteredShows.length > 0;
@@ -189,7 +228,7 @@ export function DiscoverPage() {
   return (
     <AppLayout>
       <div className="lg:hidden">
-        <HypeHeader />
+        <HypeHeader onFilterClick={() => setFilterOpen(true)} filterActive={isFilterActive} />
       </div>
 
       {/* Genre filter — isolated scroll container, no negative margins */}
@@ -254,6 +293,69 @@ export function DiscoverPage() {
         )}
 
       </main>
+      {/* Filter Drawer */}
+      <Drawer open={filterOpen} onOpenChange={setFilterOpen}>
+        <DrawerContent className="bg-hype-bg-secondary border-hype-bg-hover">
+          <DrawerHeader>
+            <DrawerTitle className="text-hype-text-primary">Filter Shows</DrawerTitle>
+          </DrawerHeader>
+
+          <div className="px-4 pb-2 space-y-6">
+            {/* Price Range */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-hype-text-primary">Price Range</span>
+                <span className="text-sm text-hype-violet font-medium">
+                  {priceRange[0] === 0 && priceRange[1] === 300
+                    ? 'Any price'
+                    : `$${priceRange[0]} – ${priceRange[1] === 300 ? '$300+' : `$${priceRange[1]}`}`}
+                </span>
+              </div>
+              <Slider
+                min={0}
+                max={300}
+                step={10}
+                value={priceRange}
+                onValueChange={v => setPriceRange(v as [number, number])}
+                className="[&_[data-slot=slider-range]]:bg-hype-violet [&_[data-slot=slider-track]]:bg-hype-bg-primary [&_[data-slot=slider-thumb]]:border-hype-violet [&_[data-slot=slider-thumb]]:bg-hype-violet"
+              />
+              <div className="flex justify-between mt-1 text-xs text-hype-text-secondary">
+                <span>Free</span>
+                <span>$300+</span>
+              </div>
+            </div>
+
+            {/* Date Range */}
+            <div>
+              <span className="text-sm font-medium text-hype-text-primary block mb-3">Date Range</span>
+              <div className="flex gap-2">
+                {(['week', 'month', 'all'] as DateRange[]).map(range => (
+                  <button
+                    key={range}
+                    onClick={() => setDateRange(range)}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateRange === range
+                        ? 'bg-hype-violet text-hype-bg-primary'
+                        : 'bg-hype-bg-primary text-hype-text-secondary hover:bg-hype-bg-hover hover:text-hype-text-primary'
+                    }`}
+                  >
+                    {range === 'week' ? 'This Week' : range === 'month' ? 'This Month' : 'All'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DrawerFooter>
+            <button
+              onClick={() => { setPriceRange([0, 300]); setDateRange('all'); }}
+              className="w-full py-3 rounded-full text-sm font-medium text-hype-text-secondary hover:text-hype-text-primary transition-colors"
+            >
+              Clear Filters
+            </button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </AppLayout>
   );
 }
