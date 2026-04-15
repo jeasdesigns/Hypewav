@@ -115,7 +115,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             <h2 className="text-xl font-bold text-hype-text-primary">TRENDING NOW</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {trending.map(show => <ShowCard key={show.id} show={show} />)}
+            {trending.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
@@ -129,7 +129,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {thisWeek.map(show => <ShowCard key={show.id} show={show} />)}
+            {thisWeek.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
@@ -143,7 +143,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {later.map(show => <ShowCard key={show.id} show={show} />)}
+            {later.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
@@ -154,7 +154,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             <h2 className="text-xl font-bold text-hype-text-primary">MORE SHOWS</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {remaining.map(show => <ShowCard key={show.id} show={show} />)}
+            {remaining.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
