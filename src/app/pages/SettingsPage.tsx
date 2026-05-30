@@ -1,8 +1,10 @@
 import { ChevronLeft } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { AppLayout } from "../components/AppLayout";
 
 export function SettingsPage() {
+  const navigate = useNavigate();
+
   return (
     <AppLayout>
       <div className="sticky top-0 z-10 bg-hype-bg-primary/95 backdrop-blur-xl border-b border-hype-bg-secondary px-4 py-4 flex items-center gap-3">
@@ -21,7 +23,7 @@ export function SettingsPage() {
             <div className="text-xs text-hype-text-secondary uppercase tracking-wide font-medium mb-3">App</div>
             <div className="space-y-1">
               <div className="flex items-center justify-between py-2">
-                <span className="text-hype-text-primary">City</span>
+                <span className="text-hype-text-primary">Coverage Area</span>
                 <span className="text-hype-text-secondary text-sm">Seattle, WA</span>
               </div>
               <div className="flex items-center justify-between py-2 border-t border-hype-bg-primary">
@@ -37,7 +39,7 @@ export function SettingsPage() {
               onClick={() => {
                 if (confirm('Clear all saved shows?')) {
                   localStorage.removeItem('hype-saved-shows');
-                  window.location.href = '/profile';
+                  navigate('/profile');
                 }
               }}
               className="w-full text-left py-2 text-hype-warning hover:text-hype-warning/80 transition-colors text-sm"
