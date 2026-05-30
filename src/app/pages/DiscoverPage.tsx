@@ -266,9 +266,9 @@ export function DiscoverPage() {
         </div>
       </div>
 
-      {/* Genre filter — isolated scroll container, no negative margins */}
+      {/* Genre filter */}
       <div className="py-3 border-b border-hype-bg-secondary">
-        <div className="px-4">
+        <div className="px-4 lg:px-8 lg:max-w-7xl lg:mx-auto">
           <GenreFilter
             selectedGenre={selectedGenre}
             onGenreChange={setSelectedGenre}
