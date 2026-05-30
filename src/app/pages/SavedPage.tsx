@@ -109,6 +109,7 @@ export function SavedPage() {
             <ShowDetailContent
               showId={displayedShowId}
               onClose={closeShow}
+              onSelect={openShow}
             />
           )}
         </SheetContent>

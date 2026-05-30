@@ -9,7 +9,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ShowDetailContent } from "../components/ShowDetailContent";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { ChevronRight, Zap, RefreshCw, Search, X } from "lucide-react";
+import { Zap, RefreshCw, Search, X } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
 import {
   Drawer,
@@ -124,9 +124,6 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-hype-text-primary">THIS WEEK</h2>
-            <button className="text-sm text-hype-violet flex items-center gap-1 hover:gap-2 transition-[gap] duration-200">
-              See all <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {thisWeek.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
@@ -138,9 +135,6 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-hype-text-primary">COMING UP</h2>
-            <button className="text-sm text-hype-violet flex items-center gap-1 hover:gap-2 transition-[gap] duration-200">
-              See all <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {later.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
@@ -344,6 +338,7 @@ export function DiscoverPage() {
             <ShowDetailContent
               showId={displayedShowId}
               onClose={closeShow}
+              onSelect={openShow}
             />
           )}
         </SheetContent>

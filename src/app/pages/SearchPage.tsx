@@ -190,6 +190,7 @@ export function SearchPage() {
             <ShowDetailContent
               showId={displayedShowId}
               onClose={closeShow}
+              onSelect={openShow}
             />
           )}
         </SheetContent>

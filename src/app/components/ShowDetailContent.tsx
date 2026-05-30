@@ -10,9 +10,10 @@ import { Show } from '../data/mockData';
 interface ShowDetailContentProps {
   showId: string;
   onClose?: () => void;
+  onSelect?: (showId: string) => void;
 }
 
-export function ShowDetailContent({ showId, onClose }: ShowDetailContentProps) {
+export function ShowDetailContent({ showId, onClose, onSelect }: ShowDetailContentProps) {
   const { shows } = useShows();
   const { isSaved, toggleSaved } = useSaved();
 
@@ -577,32 +578,48 @@ export function ShowDetailContent({ showId, onClose }: ShowDetailContentProps) {
               </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-              {similarShows.map(similarShow => (
-                <Link
-                  key={similarShow.id}
-                  to={`/show/${similarShow.id}`}
-                  className="flex-shrink-0 w-40 bg-hype-bg-secondary rounded-xl overflow-hidden hover:bg-hype-bg-hover transition-colors active:scale-[0.98]"
-                >
-                  <div className="relative h-24">
-                    {similarShow.image && (
-                      <img
-                        src={similarShow.image}
-                        alt={similarShow.artist.name}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
-                  </div>
-                  <div className="p-3">
-                    <div className="font-semibold text-sm mb-1 line-clamp-1 text-hype-text-primary">{similarShow.artist.name}</div>
-                    <div className="text-xs text-hype-text-secondary flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(similarShow.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {similarShows.map(similarShow => {
+                const cardInner = (
+                  <>
+                    <div className="relative h-24">
+                      {similarShow.image && (
+                        <img
+                          src={similarShow.image}
+                          alt={similarShow.artist.name}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
                     </div>
-                    <div className="text-xs text-hype-cyan mt-1">{similarShow.ticketPrice}</div>
-                  </div>
-                </Link>
-              ))}
+                    <div className="p-3">
+                      <div className="font-semibold text-sm mb-1 line-clamp-1 text-hype-text-primary">{similarShow.artist.name}</div>
+                      <div className="text-xs text-hype-text-secondary flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(similarShow.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </div>
+                      <div className="text-xs text-hype-cyan mt-1">{similarShow.ticketPrice}</div>
+                    </div>
+                  </>
+                );
+
+                return onSelect ? (
+                  <button
+                    key={similarShow.id}
+                    onClick={() => onSelect(similarShow.id)}
+                    className="flex-shrink-0 w-40 bg-hype-bg-secondary rounded-xl overflow-hidden hover:bg-hype-bg-hover transition-colors active:scale-[0.98] text-left"
+                  >
+                    {cardInner}
+                  </button>
+                ) : (
+                  <Link
+                    key={similarShow.id}
+                    to={`/show/${similarShow.id}`}
+                    className="flex-shrink-0 w-40 bg-hype-bg-secondary rounded-xl overflow-hidden hover:bg-hype-bg-hover transition-colors active:scale-[0.98]"
+                  >
+                    {cardInner}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
