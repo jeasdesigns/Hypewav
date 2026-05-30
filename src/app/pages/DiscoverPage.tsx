@@ -244,8 +244,8 @@ export function DiscoverPage() {
         <HypeHeader onFilterClick={() => setFilterOpen(true)} filterActive={isFilterActive} />
       </div>
 
-      {/* Search bar */}
-      <div className="px-4 pt-3 pb-2">
+      {/* Search bar — mobile only; desktop uses nav search bar */}
+      <div className="lg:hidden px-4 pt-3 pb-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-hype-text-secondary pointer-events-none" />
           <input

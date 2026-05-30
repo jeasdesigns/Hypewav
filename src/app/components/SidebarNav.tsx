@@ -69,8 +69,8 @@ export function SidebarNav() {
         </div>
       </div>
 
-      {/* Row 2: Search bar */}
-      <div className="px-8 pb-3">
+      {/* Row 2: Search bar — hidden on /search since that page has its own */}
+      {location.pathname !== '/search' && <div className="px-8 pb-3">
         <div className="max-w-3xl mx-auto relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-hype-text-secondary pointer-events-none" />
           <button
@@ -80,7 +80,7 @@ export function SidebarNav() {
             Search artists, venues, and more
           </button>
         </div>
-      </div>
+      </div>}
     </header>
   );
 }
