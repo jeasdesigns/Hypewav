@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router';
 import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, ExternalLink, Play, Pause, Check } from 'lucide-react';
+import { VenueMap } from './VenueMap';
 import { useShows } from '../context/ShowsContext';
 import { useSaved } from '../context/SavedContext';
 import { fetchEventById } from '../services/ticketmasterService';
@@ -379,34 +380,12 @@ export function ShowDetailContent({ showId, onClose, onSelect }: ShowDetailConte
                 <div className="font-semibold text-hype-text-primary mb-0.5">{show.venue.name}</div>
                 <div className="text-sm text-hype-text-secondary">{show.venue.address}</div>
               </div>
-              <div className="mt-3 rounded-lg overflow-hidden">
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(show.venue.address)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative h-36 rounded-lg overflow-hidden group"
-                >
-                  <img
-                    src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(show.venue.address)}&zoom=15&size=600x200&scale=2&markers=color:0xA78BFA|${encodeURIComponent(show.venue.address)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&style=feature:all|element:geometry|color:0x0d0d1a&style=feature:all|element:labels.text.fill|color:0x9CA3AF&style=feature:all|element:labels.text.stroke|color:0x0d0d1a&style=feature:road|element:geometry|color:0x13121E&style=feature:road.arterial|element:geometry|color:0x1A1927&style=feature:water|element:geometry|color:0x0a0a18&style=feature:poi|element:geometry|color:0x13121E`}
-                    alt={`Map of ${show.venue.name}`}
-                    className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
-                    onError={e => {
-                      const target = e.currentTarget;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                  {/* Fallback */}
-                  <div className="hidden absolute inset-0 bg-hype-bg-primary flex flex-col items-center justify-center border border-hype-bg-secondary group-hover:border-[#67E8F9]/50 transition-colors">
-                    <MapPin className="w-8 h-8 mb-2 text-hype-cyan opacity-60 group-hover:opacity-100 transition-opacity" />
-                    <div className="text-xs text-hype-cyan font-medium">View on Map →</div>
-                  </div>
-                  {/* Overlay label */}
-                  <div className="absolute bottom-2 right-2 bg-hype-bg-primary/80 backdrop-blur-sm px-2 py-1 rounded text-xs text-hype-cyan flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    Open in Maps
-                  </div>
-                </a>
+              <div className="mt-3">
+                <VenueMap
+                  address={show.venue.address}
+                  venueName={show.venue.name}
+                  googleMapsUrl={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(show.venue.address)}`}
+                />
               </div>
             </div>
           </div>
