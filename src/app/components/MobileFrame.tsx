@@ -12,7 +12,7 @@ export function MobileFrame({ children }: MobileFrameProps) {
       <SidebarNav />
 
       {/* Main content area — offset by top nav height on desktop */}
-      <div className="lg:pt-16 min-h-screen">
+      <div className="lg:pt-28 min-h-screen">
         {children}
       </div>
     </div>
