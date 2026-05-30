@@ -284,7 +284,7 @@ export function ShowDetailContent({ showId, onClose, onSelect }: ShowDetailConte
       </div>
 
       {/* Content */}
-      <div className="px-4 lg:px-8 pb-28 lg:pb-12 max-w-6xl mx-auto w-full lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+      <div className="px-4 lg:px-8 pb-28 lg:pb-12 max-w-2xl mx-auto w-full">
         {/* Left column on desktop */}
         <div>
           {/* Event Details Card */}
@@ -410,9 +410,9 @@ export function ShowDetailContent({ showId, onClose, onSelect }: ShowDetailConte
               </div>
             </div>
           </div>
-        </div>{/* end left column */}
+        </div>
 
-        {/* Right column on desktop — Artist Spotify Profile */}
+        {/* Artist Spotify Profile */}
         <div className="mb-6 mt-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-hype-text-primary">Artist Profile</h3>
@@ -566,11 +566,11 @@ export function ShowDetailContent({ showId, onClose, onSelect }: ShowDetailConte
               </div>
             )}
           </div>
-        </div>{/* end right column */}
+        </div>
 
-        {/* Similar Shows — full width */}
+        {/* Similar Shows */}
         {similarShows.length > 0 && (
-          <div className="mb-6 lg:col-span-2">
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-hype-text-primary">Similar Shows</h3>
               <Link to="/" className="text-sm text-hype-cyan font-medium hover:underline">
