@@ -3,14 +3,10 @@ import { useShowSheet } from "../hooks/useShowSheet";
 import { AppLayout } from "../components/AppLayout";
 import { HypeHeader } from "../components/HypeHeader";
 import { ShowCard } from "../components/ShowCard";
-import { ShowDetailContent } from "../components/ShowDetailContent";
+import { ShowModal } from "../components/ShowModal";
 import { Heart, Trash2 } from "lucide-react";
 import { Link } from "react-router";
 import { useSaved } from "../context/SavedContext";
-import {
-  Sheet,
-  SheetContent,
-} from "../components/ui/sheet";
 
 export function SavedPage() {
   const { savedShows, toggleSaved } = useSaved();
@@ -99,21 +95,7 @@ export function SavedPage() {
         )}
       </main>
 
-      {/* Show Detail Sheet */}
-      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) closeShow(); }}>
-        <SheetContent
-          side="bottom"
-          className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
-        >
-          {displayedShowId && (
-            <ShowDetailContent
-              showId={displayedShowId}
-              onClose={closeShow}
-              onSelect={openShow}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      <ShowModal showId={displayedShowId} onClose={closeShow} onSelect={openShow} />
     </AppLayout>
   );
 }

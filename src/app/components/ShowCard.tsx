@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { motion } from "motion/react";
 import { Flame, MapPin, Clock } from "lucide-react";
 import { Show } from "../data/mockData";
 import { normalizeGenre } from "../utils/genres";
@@ -74,18 +75,27 @@ export function ShowCard({ show, onSelect }: ShowCardProps) {
 
   if (onSelect) {
     return (
-      <button
+      <motion.button
         onClick={() => onSelect(show)}
-        className="block w-full text-left group active:scale-[0.98] transition-transform duration-150"
+        className="block w-full text-left group"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 1.05 }}
+        transition={{ type: 'spring', damping: 20, stiffness: 400 }}
       >
         {cardContent}
-      </button>
+      </motion.button>
     );
   }
 
   return (
-    <Link to={`/show/${show.id}`} className="block group active:scale-[0.98] transition-transform duration-150">
-      {cardContent}
-    </Link>
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 1.05 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 400 }}
+    >
+      <Link to={`/show/${show.id}`} className="block group">
+        {cardContent}
+      </Link>
+    </motion.div>
   );
 }

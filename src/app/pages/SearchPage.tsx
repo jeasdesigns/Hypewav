@@ -2,13 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useShowSheet } from "../hooks/useShowSheet";
 import { Search, X, MapPin, ChevronRight } from "lucide-react";
 import { AppLayout } from "../components/AppLayout";
-import { ShowDetailContent } from "../components/ShowDetailContent";
+import { ShowModal } from "../components/ShowModal";
 import { useShows } from "../context/ShowsContext";
 import { normalizeGenre } from "../utils/genres";
-import {
-  Sheet,
-  SheetContent,
-} from "../components/ui/sheet";
 
 export function SearchPage() {
   const { shows, loading } = useShows();
@@ -180,21 +176,7 @@ export function SearchPage() {
         )}
       </main>
 
-      {/* Show Detail Sheet */}
-      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) closeShow(); }}>
-        <SheetContent
-          side="bottom"
-          className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
-        >
-          {displayedShowId && (
-            <ShowDetailContent
-              showId={displayedShowId}
-              onClose={closeShow}
-              onSelect={openShow}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      <ShowModal showId={displayedShowId} onClose={closeShow} onSelect={openShow} />
     </AppLayout>
   );
 }

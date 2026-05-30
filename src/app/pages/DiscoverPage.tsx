@@ -6,7 +6,7 @@ import { ShowCard } from "../components/ShowCard";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { AppLayout } from "../components/AppLayout";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import { ShowDetailContent } from "../components/ShowDetailContent";
+import { ShowModal } from "../components/ShowModal";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
 import { Zap, RefreshCw, Search, X } from "lucide-react";
@@ -19,10 +19,6 @@ import {
   DrawerFooter,
 } from "../components/ui/drawer";
 import { Slider } from "../components/ui/slider";
-import {
-  Sheet,
-  SheetContent,
-} from "../components/ui/sheet";
 
 type DateRange = 'week' | 'month' | 'all';
 
@@ -328,21 +324,7 @@ export function DiscoverPage() {
         )}
 
       </main>
-      {/* Show Detail Sheet */}
-      <Sheet open={!!selectedShowId} onOpenChange={open => { if (!open) closeShow(); }}>
-        <SheetContent
-          side="bottom"
-          className="h-[92vh] bg-hype-bg-primary border-hype-bg-secondary p-0 overflow-y-auto [&>button]:hidden"
-        >
-          {displayedShowId && (
-            <ShowDetailContent
-              showId={displayedShowId}
-              onClose={closeShow}
-              onSelect={openShow}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      <ShowModal showId={displayedShowId} onClose={closeShow} onSelect={openShow} />
 
       {/* Filter Drawer */}
       <Drawer open={filterOpen} onOpenChange={setFilterOpen}>
