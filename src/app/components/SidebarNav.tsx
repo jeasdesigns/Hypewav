@@ -8,7 +8,6 @@ export function SidebarNav() {
   const navItems = [
     { path: '/', label: 'Discover' },
     { path: '/saved', label: 'Saved' },
-    { path: '/profile', label: 'Profile' },
   ];
 
   return (
