@@ -7,12 +7,12 @@ interface MobileFrameProps {
 
 export function MobileFrame({ children }: MobileFrameProps) {
   return (
-    <div className="min-h-screen bg-hype-bg-primary flex">
-      {/* Sidebar — desktop only */}
+    <div className="min-h-screen bg-hype-bg-primary">
+      {/* Top nav — desktop only */}
       <SidebarNav />
 
-      {/* Main content area — offset by sidebar width on desktop */}
-      <div className="flex-1 lg:ml-56 min-h-screen">
+      {/* Main content area — offset by top nav height on desktop */}
+      <div className="lg:pt-16 min-h-screen">
         {children}
       </div>
     </div>
