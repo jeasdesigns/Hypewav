@@ -6,11 +6,11 @@
 | Field | Detail |
 |---|---|
 | **Product name** | Hype.Wav |
-| **Document version** | 3.3 |
+| **Document version** | 3.4 |
 | **Status** | In Review |
 | **Author** | Jose (Product, Design, Engineering) |
 | **Created** | March 2026 |
-| **Last updated** | March 2026 |
+| **Last updated** | June 2026 |
 | **Target release** | v1.0 — Core Discovery Experience |
 | **Build approach** | Modular — each module is fully resolved before dependent modules begin |
 
@@ -419,7 +419,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 - [ ] Genre filter strip correctly filters both sections in real time on selection
 - [ ] Filter drawer opens from the filter icon in the header and exposes: price range slider and date range toggle (This Week / This Month / All)
 - [ ] Search bar filters results across show name, artist name, genre, and venue name
-- [ ] Map pin on each card opens venue location context inline — no separate map page
+- [x] Map pin on each card opens venue location context inline — implemented with OpenStreetMap + CartoDB dark tiles. No separate map page. *(Shipped — June 2026)*
 - [ ] Loading skeleton state matches the exact card dimensions of real content
 - [ ] Empty state renders with a message and action when no shows are found
 - [ ] Error state renders with a retry action when the API fails
@@ -439,7 +439,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **User Value:** The user can stay in one place and go from "who is this?" to "I'm going" in a single, continuous session. The audio preview in particular removes the biggest barrier to discovery — hearing the artist's actual sound without any context-switching.
 
-> **⚠ Production status note:** M3 is currently implemented as a full page route (`/show/:id`) rather than a modal overlay. The PRD requires a ≤3-tap flow (browse → modal → preview → ticket link) — the full page route adds navigation overhead and breaks the back-stack UX. Converting to a Radix Sheet or Dialog sliding up over the Discover page is a pre-beta requirement. See Pre-Beta Fix List, Priority 2.
+> **✅ Production status:** M3 is now implemented as a centered modal overlay, resolving the prior full page route (`/show/:id`). Card tap triggers an animated open transition over the Discover page, satisfying the ≤3-tap flow requirement. Pre-Beta Fix List Priority 2 is closed.
 
 **Assumptions:**
 - M0, M1, and M2 are fully shipped and validated
@@ -544,7 +544,7 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **Feature:** A personal profile page with user identity, settings, help, and log out.
 
-**Description:** The Profile page is the simplest module in v1 and intentionally so. It gives users a personal anchor within the app — their name and avatar — and three utility actions: Settings, Help, and Log Out. The page's primary role in v1 is to establish the profile surface that v2 will expand with full authentication, preferences, and personalized features.
+**Description:** The Profile page gives users a personal anchor within the app — their name and avatar — and three utility actions: Settings, Help, and Log Out. The page derives user stats (shows saved, top genres) directly from the Favorites dataset, giving it genuine content without requiring a backend. Its primary role in v1 is to establish the profile surface that v2 will expand with full authentication, preferences, and personalized features.
 
 **User Problem:** Without a profile page, the app has no personal dimension — it feels like a utility, not a product. Users also have no clear place to access settings or exit their session.
 
@@ -627,7 +627,7 @@ This section captures the gaps identified between production and the PRD spec du
 
 ### Priority 2 — UX flow (must fix before beta)
 
-- [ ] **Convert ShowDetailPage to modal/sheet** — replace the full page route (`/show/:id`) with a Radix `Dialog` or `Sheet` sliding up over `DiscoverPage`. Required to achieve the ≤3-tap flow specified in Goal 1 and M3. See OQ note in M3 spec above.
+- [x] **Convert ShowDetailPage to modal/sheet** — replaced the full page route (`/show/:id`) with a centered modal overlay with card-tap animation. ≤3-tap flow is achieved. *(Shipped — June 2026)*
 - [ ] **Add 300ms search debounce to SearchPage** — specified in M4 assumptions; currently re-filters on every keystroke with no debounce.
 
 ---
@@ -744,7 +744,7 @@ v3.x.x  — Community + Social
 | OQ-4 | Does search on the Search page query Ticketmaster live or filter the already-loaded dataset client-side? | Engineering | Open |
 | OQ-5 | How should saved concerts persist — local storage for v1, or does v1 require a lightweight backend? | Engineering | Open |
 | OQ-6 | What Ticketmaster signal determines Trending Now in v1 — selling fast flag, ticket volume, or recency? | Engineering | Open |
-| OQ-7 | Does the map pin on a concert card open an inline map preview or link out to Google Maps / Apple Maps? | Product | Open |
+| OQ-7 | Does the map pin on a concert card open an inline map preview or link out to Google Maps / Apple Maps? | Product | Resolved — inline map using OpenStreetMap + CartoDB dark tiles, rendered within the card/modal. No external link-out. *(June 2026)* |
 | OQ-8 | Cyan accent color — should production align to PRD spec `#22d3ee` (Tailwind cyan-400), or should the PRD be updated to match production `#67E8F9` (cyan-300)? | Design | Open |
 | OQ-9 | Background primary color — should production align to PRD spec `#0d0d1a`, or should the PRD be updated to match production `#09090F`? | Design | Open |
 | OQ-10 | Artist biography — Spotify API does not return biography data. Resolved: bio field dropped from v1 entirely. No third-party bio API in scope. M1 and M3 specs updated accordingly. | Engineering | Resolved |
@@ -757,6 +757,7 @@ v3.x.x  — Community + Social
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
+| PRD 3.4 | June 2026 | Jose | Closed Pre-Beta Priority 2 (modal conversion shipped — card tap opens centered modal overlay); resolved OQ-7 (inline map via OpenStreetMap + CartoDB dark tiles); updated M3 production status note to reflect modal is live; updated M6 description to reflect ProfilePage now derives stats and top genres from Favorites data; checked off M2 map acceptance criterion |
 | PRD 3.3 | March 2026 | Jose | Added Pre-Beta Fix List based on production gap analysis; added OQ-8 and OQ-9 for color token decisions; updated M2 load more status note; added M3 production status note re: full page route vs. modal; updated Design System token table with production mismatches and token drift note |
 | PRD 3.2 | March 2026 | Jose | Updated M2 Discover page based on wireframe review — added Trending Now section, infinite scroll, filter drawer (price + date), inline price styling, map pin on card, removed dedicated map nav page |
 | PRD 3.1 | March 2026 | Jose | Added web as a v1.0 launch target alongside mobile; updated constraints, metrics, and acceptance criteria |
