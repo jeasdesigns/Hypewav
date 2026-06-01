@@ -6,7 +6,7 @@
 | Field | Detail |
 |---|---|
 | **Product name** | Hype.Wav |
-| **Document version** | 3.5 |
+| **Document version** | 3.6 |
 | **Status** | In Review |
 | **Author** | Jose (Product, Design, Engineering) |
 | **Created** | March 2026 |
@@ -637,8 +637,8 @@ This section captures the gaps identified between production and the PRD spec du
 ### Priority 3 — Design system hygiene (fix before beta)
 
 - [x] **Replace hardcoded design token hex values** — no hype brand color tokens are hardcoded as bare hex values in components. Remaining `bg-[#...]` instances are intentional third-party brand colors (Spotify `#1DB954`, Ticketmaster `#026CDF`, etc.) and are correct as-is. *(Resolved)*
-- [ ] **Resolve cyan color discrepancy (OQ-8)** — decide between PRD spec `#22d3ee` and production `#67E8F9` and update whichever needs changing.
-- [ ] **Resolve background color discrepancy (OQ-9)** — decide between PRD spec `#0d0d1a` and production `#09090F` and update whichever needs changing.
+- [x] **Resolve cyan color discrepancy (OQ-8)** — production `#67E8F9` adopted as the standard. PRD spec updated to match. *(Resolved — June 2026)*
+- [x] **Resolve background color discrepancy (OQ-9)** — production `#09090F` adopted as the standard. PRD spec updated to match. *(Resolved — June 2026)*
 
 ---
 
@@ -658,13 +658,13 @@ This section captures the gaps identified between production and the PRD spec du
 | Token | Value | Usage | Notes |
 |---|---|---|---|
 | Primary accent | Violet `#a78bfa` | CTAs, active states, highlights | Matches production |
-| Secondary accent | Cyan `#22d3ee` | Secondary actions, badges, links | **⚠ OQ-8** — Production uses `#67E8F9` (Tailwind cyan-300). Decision needed: update PRD to match production, or update production to match PRD. |
-| Background primary | `#0d0d1a` | Main app background | **⚠ OQ-9** — Production uses `#09090F`. Decision needed: update PRD to match production, or update production to match PRD. |
+| Secondary accent | Cyan `#67E8F9` | Secondary actions, badges, links | Matches production (Tailwind cyan-300). *(OQ-8 resolved — June 2026)* |
+| Background primary | `#09090F` | Main app background | Matches production. *(OQ-9 resolved — June 2026)* |
 | Background secondary | `#13121E` | Cards, panels, hover states | Matches production |
 | Text primary | `#F1F0FB` | Headings, primary text | Matches production |
 | Text secondary | `#9CA3AF` | Captions, metadata | Matches production |
 
-> **Token drift note:** All tokens are defined in `theme.css` as CSS custom properties (e.g. `--hype-violet`, `--hype-cyan`) but are currently hardcoded as hex values directly in components (e.g. `bg-[#A78BFA]`). The token variables are not being consumed. This means a single-variable color change would require a grep-and-replace across all component files rather than a one-line edit. Resolving this is in the Pre-Beta Fix List (Priority 3).
+> **Token status:** All hype design system tokens are consumed via CSS custom properties and Tailwind theme extensions. No design token values are hardcoded as bare hex in components. Remaining `bg-[#...]` instances are intentional third-party brand colors (Spotify, Ticketmaster, etc.).
 
 ### Component Library
 
@@ -747,8 +747,8 @@ v3.x.x  — Community + Social
 | OQ-5 | How should saved concerts persist — local storage for v1, or does v1 require a lightweight backend? | Engineering | Open |
 | OQ-6 | What Ticketmaster signal determines Trending Now in v1 — selling fast flag, ticket volume, or recency? | Engineering | Open |
 | OQ-7 | Does the map pin on a concert card open an inline map preview or link out to Google Maps / Apple Maps? | Product | Resolved — inline map using OpenStreetMap + CartoDB dark tiles, rendered within the card/modal. No external link-out. *(June 2026)* |
-| OQ-8 | Cyan accent color — should production align to PRD spec `#22d3ee` (Tailwind cyan-400), or should the PRD be updated to match production `#67E8F9` (cyan-300)? | Design | Open |
-| OQ-9 | Background primary color — should production align to PRD spec `#0d0d1a`, or should the PRD be updated to match production `#09090F`? | Design | Open |
+| OQ-8 | Cyan accent color — should production align to PRD spec `#22d3ee` (Tailwind cyan-400), or should the PRD be updated to match production `#67E8F9` (cyan-300)? | Design | Resolved — production `#67E8F9` adopted as standard. *(June 2026)* |
+| OQ-9 | Background primary color — should production align to PRD spec `#0d0d1a`, or should the PRD be updated to match production `#09090F`? | Design | Resolved — production `#09090F` adopted as standard. *(June 2026)* |
 | OQ-10 | Artist biography — Spotify API does not return biography data. Resolved: bio field dropped from v1 entirely. No third-party bio API in scope. M1 and M3 specs updated accordingly. | Engineering | Resolved |
 
 ---
@@ -759,6 +759,7 @@ v3.x.x  — Community + Social
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
+| PRD 3.6 | June 2026 | Jose | Resolved OQ-8 and OQ-9 — production colors adopted as standard (`#67E8F9` cyan, `#09090F` background). Design system token table updated. All open questions are now resolved. Pre-Beta Fix List is 100% complete. App is beta-ready. |
 | PRD 3.5 | June 2026 | Jose | Closed all Pre-Beta Fix List items — Priority 1 (genre filter, save persistence, audio preview, filter drawer), Priority 2 (search debounce), Priority 3 (token hygiene), and Priority 4 (dev routes, lazy images, share button, profile stubs) are all shipped. Only open items remaining are OQ-8 and OQ-9 (color token decisions). App is functionally beta-ready. |
 | PRD 3.4 | June 2026 | Jose | Closed Pre-Beta Priority 2 (modal conversion shipped — card tap opens centered modal overlay); resolved OQ-7 (inline map via OpenStreetMap + CartoDB dark tiles); updated M3 production status note to reflect modal is live; updated M6 description to reflect ProfilePage now derives stats and top genres from Favorites data; checked off M2 map acceptance criterion |
 | PRD 3.3 | March 2026 | Jose | Added Pre-Beta Fix List based on production gap analysis; added OQ-8 and OQ-9 for color token decisions; updated M2 load more status note; added M3 production status note re: full page route vs. modal; updated Design System token table with production mismatches and token drift note |
