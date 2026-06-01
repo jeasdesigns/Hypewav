@@ -6,7 +6,7 @@
 | Field | Detail |
 |---|---|
 | **Product name** | Hype.Wav |
-| **Document version** | 3.4 |
+| **Document version** | 3.5 |
 | **Status** | In Review |
 | **Author** | Jose (Product, Design, Engineering) |
 | **Created** | March 2026 |
@@ -614,27 +614,29 @@ Beyond the metrics above, the following qualitative conditions must be true befo
 
 This section captures the gaps identified between production and the PRD spec during the March 2026 production gap analysis. Items are ordered by blocking impact on launch gates. No beta users should be onboarded until Priority 1 and Priority 2 items are closed.
 
+> **June 2026 status:** All Priority 1, 2, and 4 blocking items are shipped. Priority 3 design token hygiene items are resolved or awaiting a design decision. The app is functionally beta-ready — the only open items are the two color token decisions (OQ-8, OQ-9).
+
 ---
 
 ### Priority 1 — Core functionality (must fix before beta)
 
-- [ ] **Wire genre filter** — connect `GenreFilter` `selectedGenre` state to `DiscoverPage` show filtering logic. The component exists and the data exists; the connection is missing.
-- [ ] **Implement save persistence** — add a `SavedContext` with `localStorage` integration and wire Heart/save buttons throughout the app (ShowCard, ShowDetailPage, ArtistProfilePage). Currently the save button renders but saves nothing — SavedPage is empty shell data.
-- [ ] **Build audio preview player** — add `<audio>` element, play/pause toggle controls, and a track progress bar to `ShowDetailPage`. `preview_url` is already fetched from Spotify. Hide the play button when `preview_url` is `null` (PRD requirement — no broken controls).
-- [ ] **Build filter drawer** — wire the `HypeHeader` filter button (currently a dead end) to a Radix `Drawer` component exposing price range and date range controls.
+- [x] **Wire genre filter** — `GenreFilter` `selectedGenre` state is connected to `DiscoverPage` `filteredShows` via `useMemo`. Filtering is live across genre, search, price range, and date range. *(Shipped)*
+- [x] **Implement save persistence** — `SavedContext` with `localStorage` is fully implemented. Heart/save buttons are wired in `ShowDetailContent`. Saved shows persist across sessions. *(Shipped)*
+- [x] **Build audio preview player** — `<audio>` element, play/pause toggle, and progress bar are live in `ShowDetailContent`. Play button is hidden when `preview_url` is `null`. *(Shipped)*
+- [x] **Build filter drawer** — `HypeHeader` filter button opens a Radix `Drawer` with price range slider and date range controls, wired to `DiscoverPage` filter state. *(Shipped)*
 
 ---
 
 ### Priority 2 — UX flow (must fix before beta)
 
 - [x] **Convert ShowDetailPage to modal/sheet** — replaced the full page route (`/show/:id`) with a centered modal overlay with card-tap animation. ≤3-tap flow is achieved. *(Shipped — June 2026)*
-- [ ] **Add 300ms search debounce to SearchPage** — specified in M4 assumptions; currently re-filters on every keystroke with no debounce.
+- [x] **Add 300ms search debounce to SearchPage** — dual-state debounce (`searchQuery` / `debouncedQuery`) implemented at 300ms in `SearchPage.tsx`. *(Shipped)*
 
 ---
 
 ### Priority 3 — Design system hygiene (fix before beta)
 
-- [ ] **Replace all hardcoded hex values in components with CSS custom property variables** — audit all `bg-[#...]` and `text-[#...]` instances and map to `var(--hype-violet)`, `var(--hype-cyan)`, etc. or Tailwind theme extensions that reference the CSS vars.
+- [x] **Replace hardcoded design token hex values** — no hype brand color tokens are hardcoded as bare hex values in components. Remaining `bg-[#...]` instances are intentional third-party brand colors (Spotify `#1DB954`, Ticketmaster `#026CDF`, etc.) and are correct as-is. *(Resolved)*
 - [ ] **Resolve cyan color discrepancy (OQ-8)** — decide between PRD spec `#22d3ee` and production `#67E8F9` and update whichever needs changing.
 - [ ] **Resolve background color discrepancy (OQ-9)** — decide between PRD spec `#0d0d1a` and production `#09090F` and update whichever needs changing.
 
@@ -642,10 +644,10 @@ This section captures the gaps identified between production and the PRD spec du
 
 ### Priority 4 — Launch readiness (fix before opening to beta users)
 
-- [ ] **Remove or gate internal dev routes from production** — `/discover-option-a-variations`, `/design-pattern-mockups`, `/show-detail-mockups`, and `/design-system/*` are currently accessible to any user who knows the URL.
-- [ ] **Add `loading="lazy"` to ShowCard images** — single attribute addition with meaningful performance benefit on the show grid at scroll depth.
-- [ ] **Wire Share button** — `ArtistProfilePage` has a Share button UI with no action. Implement with `navigator.share()` and a clipboard copy fallback.
-- [ ] **Connect Profile page stubs** — Settings and Notifications buttons currently render but do nothing. Route them to placeholder screens rather than silently failing.
+- [x] **Remove internal dev routes from production** — router (`routes.tsx`) contains only production routes. No dev variation or mockup routes are present. *(Already clean)*
+- [x] **Add `loading="lazy"` to ShowCard images** — `loading="lazy"` is present on ShowCard image elements. *(Shipped)*
+- [x] **Wire Share button** — Share button in `ShowDetailContent` uses `navigator.share()` with a clipboard copy fallback and a "Copied" confirmation state. *(Shipped)*
+- [x] **Connect Profile page stubs** — Settings links to `/settings` (`SettingsPage`), Help links to `/help` (`HelpPage`), Log Out clears localStorage and resets state. All functional. *(Shipped)*
 
 ---
 
@@ -757,6 +759,7 @@ v3.x.x  — Community + Social
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
+| PRD 3.5 | June 2026 | Jose | Closed all Pre-Beta Fix List items — Priority 1 (genre filter, save persistence, audio preview, filter drawer), Priority 2 (search debounce), Priority 3 (token hygiene), and Priority 4 (dev routes, lazy images, share button, profile stubs) are all shipped. Only open items remaining are OQ-8 and OQ-9 (color token decisions). App is functionally beta-ready. |
 | PRD 3.4 | June 2026 | Jose | Closed Pre-Beta Priority 2 (modal conversion shipped — card tap opens centered modal overlay); resolved OQ-7 (inline map via OpenStreetMap + CartoDB dark tiles); updated M3 production status note to reflect modal is live; updated M6 description to reflect ProfilePage now derives stats and top genres from Favorites data; checked off M2 map acceptance criterion |
 | PRD 3.3 | March 2026 | Jose | Added Pre-Beta Fix List based on production gap analysis; added OQ-8 and OQ-9 for color token decisions; updated M2 load more status note; added M3 production status note re: full page route vs. modal; updated Design System token table with production mismatches and token drift note |
 | PRD 3.2 | March 2026 | Jose | Updated M2 Discover page based on wireframe review — added Trending Now section, infinite scroll, filter drawer (price + date), inline price styling, map pin on card, removed dedicated map nav page |
