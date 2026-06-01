@@ -84,7 +84,7 @@ function DotsIndicator({ total, activeIndex, onGoTo }: {
   );
 }
 
-function CarouselCard({ show, isCenter, onSelect }: { show: Show; isCenter: boolean; onSelect?: (show: Show) => void }) {
+function CarouselCard({ show, isCenter, onSelect, sizeClass = "w-[460px] h-[200px]" }: { show: Show; isCenter: boolean; onSelect?: (show: Show) => void; sizeClass?: string }) {
   const date = new Date(show.date + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -123,7 +123,7 @@ function CarouselCard({ show, isCenter, onSelect }: { show: Show; isCenter: bool
     </>
   );
 
-  const sharedClass = "block w-[460px] h-[200px] rounded-2xl overflow-hidden relative select-none";
+  const sharedClass = `block ${sizeClass} rounded-2xl overflow-hidden relative select-none`;
 
   if (onSelect) {
     return (
@@ -179,7 +179,30 @@ export function FeaturedCarousel({ shows, onSelect }: FeaturedCarouselProps) {
   if (total < 3) return null;
 
   return (
-    <div className="hidden lg:block w-full mb-10">
+    <div className="w-full mb-10">
+      {/* Mobile: horizontal scroll strip */}
+      <div className="lg:hidden">
+        <div className="flex items-center gap-2 mb-4 px-4">
+          <Sparkles className="w-4 h-4 text-hype-violet" />
+          <h2 className="text-sm font-semibold text-hype-text-secondary uppercase tracking-widest">Featured</h2>
+        </div>
+        <div className="flex gap-3 overflow-x-scroll scrollbar-hide pl-4">
+          {shows.map((show) => (
+            <div key={show.id} className="flex-shrink-0">
+              <CarouselCard
+                show={show}
+                isCenter={true}
+                onSelect={onSelect}
+                sizeClass="w-[280px] h-[160px]"
+              />
+            </div>
+          ))}
+          <div className="w-2 flex-shrink-0" aria-hidden="true" />
+        </div>
+      </div>
+
+      {/* Desktop: cinematic fan carousel */}
+    <div className="hidden lg:block">
       {/* Section header */}
       <div className="flex items-center gap-2 mb-5 px-1">
         <Sparkles className="w-4 h-4 text-hype-violet" />
@@ -217,6 +240,8 @@ export function FeaturedCarousel({ shows, onSelect }: FeaturedCarouselProps) {
       <div className="mt-5">
         <DotsIndicator total={total} activeIndex={activeIndex} onGoTo={goTo} />
       </div>
+    </div>
+
     </div>
   );
 }

@@ -56,6 +56,10 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
   today.setHours(0, 0, 0, 0);
   const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
+  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const thisWeekRange = `${fmt(today)} – ${fmt(new Date(weekEnd.getTime() - 86400000))}`;
+  const comingUpStart = fmt(weekEnd);
+
   const trending: Show[] = [];
   const thisWeek: Show[] = [];
   const later: Show[] = [];
@@ -119,7 +123,10 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
       {thisWeek.length > 0 && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-hype-text-primary">THIS WEEK</h2>
+            <div>
+              <h2 className="text-xl font-bold text-hype-text-primary">THIS WEEK</h2>
+              <p className="text-xs text-hype-text-secondary mt-0.5">{thisWeekRange}</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {thisWeek.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
@@ -130,7 +137,10 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
       {later.length > 0 && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-hype-text-primary">COMING UP</h2>
+            <div>
+              <h2 className="text-xl font-bold text-hype-text-primary">COMING UP</h2>
+              <p className="text-xs text-hype-text-secondary mt-0.5">From {comingUpStart}</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {later.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
