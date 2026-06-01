@@ -4,6 +4,7 @@ import { ChevronLeft, MapPin, Clock, DollarSign, Share2, Heart, Loader2, Externa
 import { VenueMap } from './VenueMap';
 import { useShows } from '../context/ShowsContext';
 import { useSaved } from '../context/SavedContext';
+import { toast } from '../utils/toast';
 import { fetchEventById } from '../services/ticketmasterService';
 import { fetchArtistByName, fetchTopTracks, SpotifyTrack } from '../services/spotifyService';
 import { Show } from '../data/mockData';
@@ -273,7 +274,7 @@ export function ShowDetailContent({ showId, onClose, onSelect }: ShowDetailConte
                 }
               </button>
               <button
-                onClick={() => show && toggleSaved(show)}
+                onClick={() => { if (!show) return; const was = isSaved(show.id); toggleSaved(show); toast.show(was ? 'Removed from saved' : 'Saved to your list'); }}
                 className="w-10 h-10 bg-hype-bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-hype-bg-primary transition-colors active:scale-95 border border-hype-bg-secondary"
                 aria-label={show && isSaved(show.id) ? 'Remove from saved' : 'Save show'}
               >

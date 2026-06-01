@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { SidebarNav } from './SidebarNav';
+import { ToastDisplay } from './ToastDisplay';
 
 interface MobileFrameProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ export function MobileFrame({ children }: MobileFrameProps) {
       <div className="lg:pt-14 min-h-screen">
         {children}
       </div>
+      <ToastDisplay />
     </div>
   );
 }

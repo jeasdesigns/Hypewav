@@ -47,17 +47,33 @@ export function ShowModal({ showId, onClose, onSelect }: ShowModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ type: 'spring', damping: 26, stiffness: 380 }}
-            className="fixed inset-x-4 top-[4vh] bottom-[4vh] z-50 max-w-2xl mx-auto bg-hype-bg-primary rounded-2xl overflow-y-auto shadow-2xl ring-1 ring-white/5"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.25 }}
+            dragMomentum={false}
+            onDragEnd={(_, { offset, velocity }) => {
+              if (offset.y > 120 || velocity.y > 600) onClose();
+            }}
+            className="fixed inset-x-4 top-[4vh] bottom-[4vh] z-50 max-w-2xl mx-auto bg-hype-bg-primary rounded-2xl shadow-2xl ring-1 ring-white/5 flex flex-col"
+            style={{ touchAction: 'none' }}
           >
+            {/* Drag handle */}
+            <div className="flex-shrink-0 flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
+              <div className="w-10 h-1 rounded-full bg-hype-text-secondary/30" />
+            </div>
+
+            {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-hype-bg-secondary hover:bg-hype-bg-hover transition-colors text-hype-text-secondary hover:text-hype-text-primary"
+              className="absolute top-3 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-hype-bg-secondary hover:bg-hype-bg-hover transition-colors text-hype-text-secondary hover:text-hype-text-primary"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <ShowDetailContent showId={showId} onClose={onClose} onSelect={onSelect} />
+            <div className="flex-1 overflow-y-auto" style={{ touchAction: 'pan-y' }}>
+              <ShowDetailContent showId={showId} onClose={onClose} onSelect={onSelect} />
+            </div>
           </motion.div>
         </>
       )}

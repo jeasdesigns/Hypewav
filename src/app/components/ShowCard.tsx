@@ -4,6 +4,7 @@ import { Flame, MapPin, Clock, Heart } from "lucide-react";
 import { Show } from "../data/mockData";
 import { normalizeGenre } from "../utils/genres";
 import { useSaved } from "../context/SavedContext";
+import { toast } from "../utils/toast";
 
 interface ShowCardProps {
   show: Show;
@@ -75,7 +76,7 @@ export function ShowCard({ show, onSelect }: ShowCardProps) {
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-xs font-semibold text-hype-cyan">{show.ticketPrice}</span>
             <button
-              onClick={e => { e.stopPropagation(); toggleSaved(show); }}
+              onClick={e => { e.stopPropagation(); toggleSaved(show); toast.show(saved ? 'Removed from saved' : 'Saved to your list'); }}
               className="w-7 h-7 rounded-full bg-hype-bg-primary/70 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-hype-bg-primary/90"
               aria-label={saved ? 'Remove from saved' : 'Save show'}
             >

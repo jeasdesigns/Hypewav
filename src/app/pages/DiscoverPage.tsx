@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router";
 import { useShowSheet } from "../hooks/useShowSheet";
 import { GenreFilter } from "../components/GenreFilter";
@@ -9,7 +9,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ShowModal } from "../components/ShowModal";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { Zap, RefreshCw, Search, X, MapPin, Filter } from "lucide-react";
+import { Zap, RefreshCw, Search, X, MapPin, Filter, RotateCw } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
 import {
   Drawer,
@@ -244,6 +244,48 @@ export function DiscoverPage() {
   const hasShows = shows.length > 0;
   const hasFiltered = filteredShows.length > 0;
 
+  // Pull to refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const pullStartY = useRef(0);
+  const PULL_THRESHOLD = 72;
+
+  const handleRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    await refresh();
+    setTimeout(() => setRefreshing(false), 800);
+  }, [refresh, refreshing]);
+
+  useEffect(() => {
+    const onTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) pullStartY.current = e.touches[0].clientY;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (window.scrollY > 2) return;
+      const delta = e.touches[0].clientY - pullStartY.current;
+      if (delta > 0) setPullY(Math.min(delta, PULL_THRESHOLD * 1.5));
+    };
+    const onTouchEnd = () => {
+      if (pullY >= PULL_THRESHOLD) handleRefresh();
+      setPullY(0);
+    };
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [pullY, handleRefresh]);
+
+  // Result count label
+  const isFiltered = selectedGenre !== 'All' || searchText.trim() !== '';
+  const countLabel = isFiltered
+    ? `${filteredShows.length} ${selectedGenre !== 'All' ? selectedGenre + ' ' : ''}show${filteredShows.length !== 1 ? 's' : ''}`
+    : null;
+
   return (
     <AppLayout>
       {/* Unified sticky header: brand row (mobile) + search + genre filter */}
@@ -293,7 +335,7 @@ export function DiscoverPage() {
         </div>
 
         {/* Genre filter */}
-        <div className="px-4 lg:px-8 pb-3 lg:max-w-7xl lg:mx-auto">
+        <div className="px-4 lg:px-8 pb-2 lg:max-w-7xl lg:mx-auto">
           <GenreFilter
             selectedGenre={selectedGenre}
             onGenreChange={setSelectedGenre}
@@ -301,7 +343,25 @@ export function DiscoverPage() {
           />
         </div>
 
+        {/* Result count */}
+        {countLabel && (
+          <div className="px-4 lg:px-8 pb-2 lg:max-w-7xl lg:mx-auto">
+            <p className="text-xs text-hype-text-secondary">{countLabel}</p>
+          </div>
+        )}
+
       </div>
+
+      {/* Pull to refresh indicator (mobile) */}
+      {(pullY > 8 || refreshing) && (
+        <div
+          className="flex items-center justify-center gap-2 py-2 text-xs text-hype-text-secondary transition-all lg:hidden"
+          style={{ height: refreshing ? 40 : Math.min(pullY * 0.5, 40) }}
+        >
+          <RotateCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-hype-violet' : 'text-hype-text-secondary'}`} style={{ rotate: `${(pullY / PULL_THRESHOLD) * 180}deg` }} />
+          <span>{refreshing ? 'Refreshing…' : pullY >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}</span>
+        </div>
+      )}
 
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 

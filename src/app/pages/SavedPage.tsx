@@ -4,20 +4,39 @@ import { AppLayout } from "../components/AppLayout";
 import { HypeHeader } from "../components/HypeHeader";
 import { ShowCard } from "../components/ShowCard";
 import { ShowModal } from "../components/ShowModal";
-import { Heart, Trash2 } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Link } from "react-router";
 import { useSaved } from "../context/SavedContext";
 
+function getCountdown(dateStr: string): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const show = new Date(dateStr + 'T00:00:00');
+  const days = Math.round((show.getTime() - today.getTime()) / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days <= 7) return `In ${days} days`;
+  if (days <= 14) return 'Next week';
+  const weeks = Math.round(days / 7);
+  if (weeks < 9) return `In ${weeks} weeks`;
+  return `In ${Math.round(days / 30)} months`;
+}
+
 export function SavedPage() {
-  const { savedShows, toggleSaved } = useSaved();
+  const { savedShows } = useSaved();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const { selectedShowId, displayedShowId, openShow, closeShow } = useShowSheet();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcomingShows = savedShows.filter(show => new Date(show.date + 'T00:00:00') >= today);
-  const pastShows = savedShows.filter(show => new Date(show.date + 'T00:00:00') < today);
+  const upcomingShows = savedShows
+    .filter(show => new Date(show.date + 'T00:00:00') >= today)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const pastShows = savedShows
+    .filter(show => new Date(show.date + 'T00:00:00') < today)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const currentShows = activeTab === 'upcoming' ? upcomingShows : pastShows;
   const hasShows = currentShows.length > 0;
@@ -57,18 +76,25 @@ export function SavedPage() {
       <main className="px-4 pt-4 pb-24">
         {hasShows ? (
           <div className="space-y-4">
-            {currentShows.map(show => (
-              <div key={show.id} className="relative group">
+            {currentShows.map(show => {
+              const countdown = activeTab === 'upcoming' ? getCountdown(show.date) : null;
+              const isUrgent = countdown === 'Today' || countdown === 'Tomorrow';
+              return (
+              <div key={show.id} className="space-y-1.5">
+                {countdown && (
+                  <div className="flex items-center gap-2 px-1">
+                    <span className={`text-xs font-semibold ${isUrgent ? 'text-hype-violet' : 'text-hype-cyan'}`}>
+                      {countdown}
+                    </span>
+                    {isUrgent && (
+                      <span className="text-xs text-hype-text-secondary">· Don't miss it</span>
+                    )}
+                  </div>
+                )}
                 <ShowCard show={show} onSelect={s => openShow(s.id)} />
-                <button
-                  onClick={() => toggleSaved(show)}
-                  className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 bg-hype-warning rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Remove from saved"
-                >
-                  <Trash2 className="w-5 h-5 text-hype-bg-primary" />
-                </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="flex items-center justify-center h-[calc(100vh-300px)]">
