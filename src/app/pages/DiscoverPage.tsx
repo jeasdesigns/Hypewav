@@ -9,7 +9,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ShowModal } from "../components/ShowModal";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { Zap, RefreshCw, Search, X, MapPin, Filter, RotateCw } from "lucide-react";
+import { Zap, RefreshCw, Search, X, MapPin, Filter, RotateCw, Music2 } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
 import {
   Drawer,
@@ -182,7 +182,8 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
 // ─── Main content ──────────────────────────────────────────────────────────────
 
 function ShowsContent({ shows, filteredShows, onSelect }: { shows: Show[]; filteredShows: Show[]; onSelect: (show: Show) => void }) {
-  const featuredShows = dedupeSection(shows);
+  // Carousel reflects the active filter so genre selection applies everywhere
+  const featuredShows = dedupeSection(filteredShows.length >= 3 ? filteredShows : shows);
   return (
     <>
       <FeaturedCarousel shows={featuredShows} onSelect={onSelect} />
@@ -200,9 +201,25 @@ export function DiscoverPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
   const [dateRange, setDateRange] = useState<DateRange>('all');
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const { selectedShowId, displayedShowId, openShow, closeShow } = useShowSheet();
 
   const isFilterActive = priceRange[0] > 0 || priceRange[1] < 300 || dateRange !== 'all';
+  const anyFilterActive = selectedGenre !== 'All' || searchText.trim() !== '' || isFilterActive;
+
+  const clearAllFilters = () => {
+    setSelectedGenre('All');
+    setSearchText('');
+    setDebouncedSearch('');
+    setPriceRange([0, 300]);
+    setDateRange('all');
+  };
+
+  // 300ms debounce on inline search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchText), 300);
+    return () => clearTimeout(t);
+  }, [searchText]);
 
   // Normalize raw Spotify genres → broad categories; deduplicate
   const genres = useMemo(() => {
@@ -226,7 +243,7 @@ export function DiscoverPage() {
     if (dateRange === 'week') cutoff.setDate(today.getDate() + 7);
     else if (dateRange === 'month') cutoff.setDate(today.getDate() + 30);
 
-    const q = searchText.toLowerCase().trim();
+    const q = debouncedSearch.toLowerCase().trim();
 
     return shows.filter(show => {
       // Text search across artist, venue, genre
@@ -257,7 +274,7 @@ export function DiscoverPage() {
 
       return true;
     });
-  }, [shows, searchText, selectedGenre, priceRange, dateRange]);
+  }, [shows, debouncedSearch, selectedGenre, priceRange, dateRange]);
 
   const hasShows = shows.length > 0;
   const hasFiltered = filteredShows.length > 0;
@@ -299,7 +316,7 @@ export function DiscoverPage() {
   }, [pullY, handleRefresh]);
 
   // Result count label
-  const isFiltered = selectedGenre !== 'All' || searchText.trim() !== '';
+  const isFiltered = selectedGenre !== 'All' || debouncedSearch.trim() !== '';
   const countLabel = isFiltered
     ? `${filteredShows.length} ${selectedGenre !== 'All' ? selectedGenre + ' ' : ''}show${filteredShows.length !== 1 ? 's' : ''}`
     : null;
@@ -361,10 +378,21 @@ export function DiscoverPage() {
           />
         </div>
 
-        {/* Result count */}
-        {countLabel && (
-          <div className="px-4 lg:px-8 pb-2 lg:max-w-7xl lg:mx-auto">
-            <p className="text-xs text-hype-text-secondary">{countLabel}</p>
+        {/* Result count + clear filters */}
+        {(countLabel || anyFilterActive) && (
+          <div className="px-4 lg:px-8 pb-2 lg:max-w-7xl lg:mx-auto flex items-center justify-between">
+            {countLabel
+              ? <p className="text-xs text-hype-text-secondary">{countLabel}</p>
+              : <span />
+            }
+            {anyFilterActive && (
+              <button
+                onClick={clearAllFilters}
+                className="text-xs text-hype-violet hover:text-hype-violet/80 font-medium transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         )}
 
@@ -384,15 +412,42 @@ export function DiscoverPage() {
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
 
         {!hasShows && loading && (
-          <section className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-hype-violet" />
-              <h2 className="text-xl font-bold text-hype-text-primary">TRENDING NOW</h2>
+          <>
+            {/* Carousel skeleton — desktop */}
+            <div className="hidden lg:block mb-10">
+              <div className="flex items-center gap-2 mb-5 px-1">
+                <div className="w-4 h-4 rounded-full bg-hype-bg-secondary animate-pulse" />
+                <div className="w-20 h-3 rounded bg-hype-bg-secondary animate-pulse" />
+              </div>
+              <div className="h-[260px] rounded-2xl bg-hype-bg-secondary animate-pulse" />
+              <div className="flex justify-center gap-2 mt-5">
+                {[0,1,2,3,4].map(i => <div key={i} className="w-2 h-2 rounded-full bg-hype-bg-secondary animate-pulse" />)}
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {[0, 1, 2].map(i => <ShowCardSkeleton key={i} />)}
+
+            {/* Carousel skeleton — mobile */}
+            <div className="lg:hidden mb-8">
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <div className="w-4 h-4 rounded-full bg-hype-bg-secondary animate-pulse" />
+                <div className="w-20 h-3 rounded bg-hype-bg-secondary animate-pulse" />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-[280px] h-[160px] rounded-2xl bg-hype-bg-secondary animate-pulse" />
+                <div className="flex-shrink-0 w-[280px] h-[160px] rounded-2xl bg-hype-bg-secondary animate-pulse opacity-50" />
+              </div>
             </div>
-          </section>
+
+            {/* Section skeleton */}
+            <section className="mb-8">
+              <div className="mb-4">
+                <div className="w-28 h-5 rounded bg-hype-bg-secondary animate-pulse mb-1.5" />
+                <div className="w-20 h-3 rounded bg-hype-bg-secondary animate-pulse" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {[0,1,2,3,4,5].map(i => <ShowCardSkeleton key={i} />)}
+              </div>
+            </section>
+          </>
         )}
 
         {!hasShows && !loading && error && (
@@ -406,7 +461,7 @@ export function DiscoverPage() {
         {!hasShows && !loading && !error && (
           <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
             <div className="w-16 h-16 rounded-full bg-hype-bg-secondary flex items-center justify-center mb-2">
-              <span className="text-3xl">🎵</span>
+              <Music2 className="w-7 h-7 text-hype-text-secondary opacity-60" />
             </div>
             <h3 className="text-xl font-bold text-hype-text-primary mb-2">Nothing on the lineup right now</h3>
             <p className="text-hype-text-secondary text-sm max-w-xs">Looks like Seattle's taking a breather. Check back soon or hit refresh.</p>
@@ -423,7 +478,7 @@ export function DiscoverPage() {
         {hasShows && !hasFiltered && (
           <div className="flex flex-col items-center justify-center py-20 gap-5 text-center px-8">
             <div className="w-16 h-16 rounded-full bg-hype-bg-secondary flex items-center justify-center mb-2">
-              <span className="text-3xl">🎵</span>
+              <Music2 className="w-7 h-7 text-hype-text-secondary opacity-60" />
             </div>
             <h3 className="text-xl font-bold text-hype-text-primary mb-2">No shows found</h3>
             <p className="text-hype-text-secondary text-sm max-w-xs">Try adjusting your search or filters.</p>
