@@ -51,6 +51,19 @@ function RefreshButton({ onRefresh }: { onRefresh: () => void }) {
 
 // ─── Section logic ─────────────────────────────────────────────────────────────
 
+// Keep only the earliest show per artist+venue within a section.
+// Multi-night runs are real but showing the same artist/venue twice in one
+// section is visually confusing — users can discover other dates in the modal.
+function dedupeSection(shows: Show[]): Show[] {
+  const seen = new Set<string>();
+  return shows.filter(show => {
+    const key = `${show.artist.name.toLowerCase()}|||${show.venue.id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Show) => void }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -92,6 +105,10 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
   ]);
   const remaining = shows.filter(s => !bucketed.has(s.id));
 
+  const dedupedThisWeek = dedupeSection(thisWeek);
+  const dedupedLater = dedupeSection(later);
+  const dedupedRemaining = dedupeSection(remaining);
+
   if (trending.length === 0 && thisWeek.length === 0 && later.length === 0) {
     return (
       <section className="mb-8">
@@ -129,7 +146,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {thisWeek.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
+            {dedupedThisWeek.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
@@ -143,7 +160,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {later.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
+            {dedupedLater.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
@@ -154,7 +171,7 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
             <h2 className="text-xl font-bold text-hype-text-primary">MORE SHOWS</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {remaining.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
+            {dedupedRemaining.map(show => <ShowCard key={show.id} show={show} onSelect={onSelect} />)}
           </div>
         </section>
       )}
@@ -165,9 +182,10 @@ function ShowSections({ shows, onSelect }: { shows: Show[]; onSelect: (show: Sho
 // ─── Main content ──────────────────────────────────────────────────────────────
 
 function ShowsContent({ shows, filteredShows, onSelect }: { shows: Show[]; filteredShows: Show[]; onSelect: (show: Show) => void }) {
+  const featuredShows = dedupeSection(shows);
   return (
     <>
-      <FeaturedCarousel shows={shows} onSelect={onSelect} />
+      <FeaturedCarousel shows={featuredShows} onSelect={onSelect} />
       <ShowSections shows={filteredShows} onSelect={onSelect} />
     </>
   );
