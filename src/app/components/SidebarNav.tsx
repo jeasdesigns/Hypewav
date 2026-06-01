@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router';
-import { MapPin, Search, Heart, User, Bell } from 'lucide-react';
+import { MapPin, Search, Heart, User } from 'lucide-react';
 
 export function SidebarNav() {
   const location = useLocation();
@@ -60,12 +60,6 @@ export function SidebarNav() {
           >
             <User className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-hype-violet' : 'text-hype-text-secondary'}`} />
           </Link>
-          <button
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-hype-bg-secondary transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5 text-hype-text-secondary" />
-          </button>
         </div>
       </div>
 
