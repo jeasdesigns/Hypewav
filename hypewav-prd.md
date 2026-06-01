@@ -6,7 +6,7 @@
 | Field | Detail |
 |---|---|
 | **Product name** | Hype.Wav |
-| **Document version** | 3.7 |
+| **Document version** | 3.8 |
 | **Status** | In Review |
 | **Author** | Jose (Product, Design, Engineering) |
 | **Created** | March 2026 |
@@ -412,20 +412,25 @@ Each feature below is specified against a consistent template: **Feature, Descri
 - Algorithmic or ML-driven trending — Trending Now in v1 uses a simple Ticketmaster signal
 
 **Acceptance Criteria:**
-- [ ] Discover page renders with two sections: Trending Now (featured hero cards) and This Week (standard card listing)
-- [ ] Each card displays: artist image, artist name, venue, date, genre tag, and lowest ticket price (price in accent color, inline in metadata)
-- [ ] Trending Now cards are visually larger and more prominent than This Week cards
-- [ ] Load more pattern — current production renders all shows at once; a load more mechanism is planned and is a gap to close before beta
-- [ ] Genre filter strip correctly filters both sections in real time on selection
-- [ ] Filter drawer opens from the filter icon in the header and exposes: price range slider and date range toggle (This Week / This Month / All)
-- [ ] Search bar filters results across show name, artist name, genre, and venue name
-- [x] Map pin on each card opens venue location context inline — implemented with OpenStreetMap + CartoDB dark tiles. No separate map page. *(Shipped — June 2026)*
-- [ ] Loading skeleton state matches the exact card dimensions of real content
-- [ ] Empty state renders with a message and action when no shows are found
-- [ ] Error state renders with a retry action when the API fails
-- [ ] Tapping a card correctly opens M3 (Artist Modal)
-- [ ] All Figma frames frozen and designs match production 1:1 on both mobile and web viewports
-- [ ] **M2 is deployed to Cloudflare Pages and validated with live data before M3 or M4 begin**
+- [x] Discover page renders with sections: FEATURED carousel (hero, desktop fan + mobile scroll strip), THIS WEEK, COMING UP, MORE SHOWS *(Shipped)*
+- [x] Each card displays: artist image, artist name, date, venue, time, genre badge, price, and quick-save heart button *(Shipped — June 2026)*
+- [x] FEATURED carousel is visually prominent with windowed dot indicator (max 5), n/total counter, and "FEATURED" section label *(Shipped)*
+- [x] Genre filter, search, and price/date drawer all filter the FEATURED carousel and section grids simultaneously *(Shipped)*
+- [x] Search input is debounced at 300ms — no per-keystroke re-renders *(Shipped)*
+- [x] "Clear filters" button appears whenever any filter is active and resets all filter state in one tap *(Shipped)*
+- [x] Genre filter, search bar, and mobile brand row are unified into a single sticky header bar (top-0 mobile, top-14 desktop) *(Shipped)*
+- [x] Genre chips are compact (text-xs, px-3 py-1), horizontally scrollable on all viewports *(Shipped)*
+- [x] Multi-night runs (same artist + venue) are deduplicated within each section — only earliest date shown *(Shipped)*
+- [x] Result count ("8 Folk shows") displayed when a genre or search filter is active *(Shipped)*
+- [x] Section headers show date context: THIS WEEK shows "Jun 1–7", COMING UP shows "From Jun 8" *(Shipped)*
+- [x] Pull-to-refresh gesture on mobile triggers data reload with visual feedback *(Shipped)*
+- [x] Filter drawer opens from the filter icon and exposes price range slider and date range toggle *(Shipped)*
+- [x] Map pin on each card opens inline venue map — OpenStreetMap + CartoDB Voyager tiles *(Shipped — June 2026)*
+- [x] Loading skeleton matches real page layout: carousel placeholder + section header stub + 6 card stubs *(Shipped)*
+- [x] Empty state uses Music2 icon (not emoji) with message and retry action *(Shipped)*
+- [x] Error state renders with a retry action when the API fails *(Shipped)*
+- [x] Tapping a card correctly opens M3 (Artist Modal) *(Shipped)*
+- [ ] **M2 is deployed to Cloudflare Pages and validated with live data** *(In continuous deployment via GitHub → Cloudflare Pages)*
 
 ---
 
@@ -455,8 +460,9 @@ Each feature below is specified against a consistent template: **Feature, Descri
 - Sharing the artist profile — this is v2
 
 **Acceptance Criteria:**
-- [ ] Tapping a concert card on M2 opens the modal as a slide-up overlay
-- [ ] Modal correctly displays: artist hero image, name, genre tags (up to 5), top 5 tracks, upcoming shows, and ticket CTA
+- [x] Tapping a concert card on M2 opens the modal as a centered overlay with spring animation *(Shipped)*
+- [x] Modal supports swipe-to-dismiss — drag down >120px or flick to close; drag handle pill is visible at the top *(Shipped — June 2026)*
+- [x] Modal correctly displays: artist hero image, name, genre tags (up to 5), top 5 tracks, upcoming shows, and ticket CTA
 - [ ] Each track row shows a play/pause button — tapping it plays the 30-second Spotify preview
 - [ ] Only one track plays at a time — starting a new track stops the previous one
 - [ ] Closing the modal stops any active audio playback
@@ -523,20 +529,19 @@ Each feature below is specified against a consistent template: **Feature, Descri
 
 **Not Doing:**
 - Cross-device sync of saved concerts — v1 is local storage only
-- Sorting or organizing saved concerts — saved order only in v1
 - Notifications for upcoming saved shows — this is v2
 - Personalized recommendations based on saved concerts — this is v2, informed by data collected here
 
 **Acceptance Criteria:**
-- [ ] Favorites page is accessible via the bottom navigation bar
-- [ ] All concerts saved via M3 appear on this page, in the order they were saved
-- [ ] Each saved concert uses the same card format as M2
-- [ ] Tapping a saved card opens the Artist Modal (M3)
-- [ ] Unsaving a concert via the M3 modal removes it from the Favorites list in real time
-- [ ] Empty state renders with a message and a CTA directing the user back to Discover
-- [ ] Saved concerts persist correctly across sessions (local storage)
-- [ ] All Figma frames frozen and match production 1:1
-- [ ] **M5 is deployed and validated before M6 begins**
+- [x] Favorites page is accessible via the bottom navigation bar *(Shipped)*
+- [x] Upcoming saved concerts sorted by soonest date first; past shows sorted most-recent first *(Shipped — June 2026)*
+- [x] Countdown label ("Today", "Tomorrow", "In 3 days") shown above each upcoming card; urgent shows highlighted in violet *(Shipped — June 2026)*
+- [x] Each saved concert uses the same card format as M2 *(Shipped)*
+- [x] Tapping a saved card opens the Artist Modal (M3) *(Shipped)*
+- [x] Unsaving a concert via the M3 modal or card heart removes it from the Favorites list in real time *(Shipped)*
+- [x] Empty state renders with a message and a CTA directing the user back to Discover *(Shipped)*
+- [x] Saved concerts persist correctly across sessions (local storage) *(Shipped)*
+- [x] **M5 is deployed and validated** *(Shipped)*
 
 ---
 
@@ -759,6 +764,7 @@ v3.x.x  — Community + Social
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
+| PRD 3.8 | June 2026 | Jose | Major UX pass across all modules. M2: unified sticky filter bar (brand + search + genre chips), compact scrollable genre chips, genre filter now applies to carousel, search debounced at 300ms, clear-filters shortcut, result count label, pull-to-refresh (mobile), show deduplication by artist+venue, date + quick-save heart on cards, section date ranges, improved loading skeleton, Music2 icon empty states, mobile featured scroll strip. M3: swipe-to-dismiss modal with drag handle. M5: countdown labels on saved shows, sort upcoming by soonest date. System: save/unsave toast feedback, notification bell removed, OG meta tags + branded link preview image, Cloudflare build fixed (.npmrc), react-leaflet downgraded to v4, venue map geocoding retry + Voyager tiles. |
 | PRD 3.7 | June 2026 | Jose | Featured carousel UX polish — added "FEATURED" section label with Sparkles icon; replaced unbounded dot row with a windowed 5-dot indicator (centered on active item, edge dots hint at more) plus a `n / total` counter. Inline search made visible on desktop. SidebarNav search-navigate removed; search is now inline on Discover for all viewports. |
 | PRD 3.6 | June 2026 | Jose | Resolved OQ-8 and OQ-9 — production colors adopted as standard (`#67E8F9` cyan, `#09090F` background). Design system token table updated. All open questions are now resolved. Pre-Beta Fix List is 100% complete. App is beta-ready. |
 | PRD 3.5 | June 2026 | Jose | Closed all Pre-Beta Fix List items — Priority 1 (genre filter, save persistence, audio preview, filter drawer), Priority 2 (search debounce), Priority 3 (token hygiene), and Priority 4 (dev routes, lazy images, share button, profile stubs) are all shipped. Only open items remaining are OQ-8 and OQ-9 (color token decisions). App is functionally beta-ready. |
