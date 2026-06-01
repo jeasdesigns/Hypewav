@@ -33,6 +33,16 @@ function Recenter({ lat, lng }: { lat: number; lng: number }) {
   return null;
 }
 
+// Force Leaflet to recalculate tile grid after modal animation settles
+function InvalidateSize() {
+  const map = useMap();
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 300);
+    return () => clearTimeout(t);
+  }, [map]);
+  return null;
+}
+
 interface VenueMapProps {
   address: string;
   venueName: string;
@@ -47,13 +57,29 @@ export function VenueMap({ address, venueName, googleMapsUrl }: VenueMapProps) {
     if (!address) return;
     let cancelled = false;
 
+    // Nominatim — no User-Agent header (browsers block it; use Accept-Language only)
     fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
-      { headers: { 'Accept-Language': 'en', 'User-Agent': 'HypeWav/1.0' } }
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`,
+      { headers: { 'Accept-Language': 'en' } }
     )
       .then(r => r.json())
       .then(data => {
-        if (cancelled || !data[0]) { if (!cancelled) setError(true); return; }
+        if (cancelled) return;
+        if (!data[0]) {
+          // Retry with city/state only stripped from full address
+          const simplified = address.split(',').slice(1).join(',').trim();
+          if (!simplified) { setError(true); return; }
+          return fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(simplified)}&format=json&limit=1&countrycodes=us`,
+            { headers: { 'Accept-Language': 'en' } }
+          )
+            .then(r => r.json())
+            .then(d2 => {
+              if (cancelled) return;
+              if (!d2[0]) { setError(true); return; }
+              setCoords({ lat: parseFloat(d2[0].lat), lng: parseFloat(d2[0].lon) });
+            });
+        }
         setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
       })
       .catch(() => { if (!cancelled) setError(true); });
@@ -104,16 +130,17 @@ export function VenueMap({ address, venueName, googleMapsUrl }: VenueMapProps) {
         attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
         />
         <Marker position={[coords.lat, coords.lng]} icon={violetIcon} />
         <Recenter lat={coords.lat} lng={coords.lng} />
+        <InvalidateSize />
       </MapContainer>
 
       {/* "Open in Maps" overlay label */}
-      <div className="absolute bottom-2 right-2 z-[400] bg-hype-bg-primary/80 backdrop-blur-sm px-2 py-1 rounded text-xs text-hype-cyan flex items-center gap-1 group-hover:bg-hype-bg-primary transition-colors">
-        <MapPin className="w-3 h-3" />
+      <div className="absolute bottom-2 right-2 z-[400] bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs text-gray-700 flex items-center gap-1 font-medium group-hover:bg-white transition-colors">
+        <MapPin className="w-3 h-3 text-hype-violet" />
         Open in Maps
       </div>
     </a>
