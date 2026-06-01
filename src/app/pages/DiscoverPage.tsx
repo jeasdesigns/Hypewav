@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router";
 import { useShowSheet } from "../hooks/useShowSheet";
-import { HypeHeader } from "../components/HypeHeader";
 import { GenreFilter } from "../components/GenreFilter";
 import { ShowCard } from "../components/ShowCard";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
@@ -9,7 +9,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { ShowModal } from "../components/ShowModal";
 import { useShows } from "../context/ShowsContext";
 import { Show } from "../data/mockData";
-import { Zap, RefreshCw, Search, X } from "lucide-react";
+import { Zap, RefreshCw, Search, X, MapPin, Filter } from "lucide-react";
 import { normalizeGenre } from "../utils/genres";
 import {
   Drawer,
@@ -236,41 +236,61 @@ export function DiscoverPage() {
 
   return (
     <AppLayout>
-      <div className="lg:hidden">
-        <HypeHeader onFilterClick={() => setFilterOpen(true)} filterActive={isFilterActive} />
-      </div>
+      {/* Unified sticky header: brand row (mobile) + search + genre filter */}
+      <div className="sticky top-0 lg:top-14 z-30 bg-hype-bg-primary/95 backdrop-blur-xl border-b border-hype-bg-secondary">
 
-      {/* Inline search — filters results in place on all viewports */}
-      <div className="px-4 lg:px-8 pt-3 pb-2 lg:max-w-7xl lg:mx-auto">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-hype-text-secondary pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search artists, venues..."
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-            className="w-full bg-hype-bg-secondary text-hype-text-primary placeholder:text-hype-text-secondary pl-9 pr-9 py-2.5 rounded-xl text-sm border border-transparent focus:border-hype-violet focus:outline-none transition-colors"
-          />
-          {searchText && (
-            <button
-              onClick={() => setSearchText('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-hype-text-secondary hover:text-hype-text-primary"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        {/* Mobile brand row */}
+        <div className="lg:hidden flex items-center justify-between px-4 pt-4 pb-2">
+          <Link to="/" className="flex-1">
+            <div className="text-xs text-hype-text-secondary tracking-wide font-medium mb-0.5">Hype.Wav</div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-hype-cyan" />
+              <span className="text-2xl font-bold text-hype-text-primary">Seattle</span>
+            </div>
+          </Link>
+          <button
+            onClick={() => setFilterOpen(true)}
+            className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
+              isFilterActive ? 'bg-hype-violet/20 hover:bg-hype-violet/30' : 'bg-hype-bg-secondary hover:bg-hype-bg-hover'
+            }`}
+            aria-label="Filter shows"
+          >
+            <Filter className={`w-5 h-5 ${isFilterActive ? 'text-hype-violet' : 'text-hype-text-secondary'}`} />
+            {isFilterActive && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-hype-violet" />}
+          </button>
         </div>
-      </div>
 
-      {/* Genre filter */}
-      <div className="py-3 border-b border-hype-bg-secondary">
-        <div className="px-4 lg:px-8 lg:max-w-7xl lg:mx-auto">
+        {/* Search */}
+        <div className="px-4 lg:px-8 pt-2 lg:pt-3 pb-2 lg:max-w-7xl lg:mx-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-hype-text-secondary pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search artists, venues..."
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              className="w-full bg-hype-bg-secondary text-hype-text-primary placeholder:text-hype-text-secondary pl-9 pr-9 py-2.5 rounded-xl text-sm border border-transparent focus:border-hype-violet focus:outline-none transition-colors"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-hype-text-secondary hover:text-hype-text-primary"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Genre filter */}
+        <div className="px-4 lg:px-8 pb-3 lg:max-w-7xl lg:mx-auto">
           <GenreFilter
             selectedGenre={selectedGenre}
             onGenreChange={setSelectedGenre}
             genres={genres}
           />
         </div>
+
       </div>
 
       <main className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
