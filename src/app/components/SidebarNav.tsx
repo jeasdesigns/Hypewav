@@ -1,9 +1,8 @@
-import { Link, useLocation, useNavigate } from 'react-router';
-import { MapPin, Search, Heart, User } from 'lucide-react';
+import { Link, useLocation } from 'react-router';
+import { MapPin, Heart, User } from 'lucide-react';
 
 export function SidebarNav() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const navItems = [
     { path: '/', label: 'Discover' },
@@ -63,18 +62,6 @@ export function SidebarNav() {
         </div>
       </div>
 
-      {/* Row 2: Search bar — hidden on /search since that page has its own */}
-      {location.pathname !== '/search' && <div className="px-8 pb-3">
-        <div className="max-w-3xl mx-auto relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-hype-text-secondary pointer-events-none" />
-          <button
-            onClick={() => navigate('/search')}
-            className="w-full text-left bg-hype-bg-secondary hover:bg-hype-bg-hover text-hype-text-secondary pl-12 pr-6 py-2.5 rounded-full border border-transparent hover:border-hype-bg-hover focus:border-hype-violet focus:outline-none transition-colors text-sm"
-          >
-            Search artists, venues, and more
-          </button>
-        </div>
-      </div>}
     </header>
   );
 }
