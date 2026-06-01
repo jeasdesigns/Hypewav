@@ -6,7 +6,7 @@
 | Field | Detail |
 |---|---|
 | **Product name** | Hype.Wav |
-| **Document version** | 3.6 |
+| **Document version** | 3.7 |
 | **Status** | In Review |
 | **Author** | Jose (Product, Design, Engineering) |
 | **Created** | March 2026 |
@@ -759,6 +759,7 @@ v3.x.x  — Community + Social
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
+| PRD 3.7 | June 2026 | Jose | Featured carousel UX polish — added "FEATURED" section label with Sparkles icon; replaced unbounded dot row with a windowed 5-dot indicator (centered on active item, edge dots hint at more) plus a `n / total` counter. Inline search made visible on desktop. SidebarNav search-navigate removed; search is now inline on Discover for all viewports. |
 | PRD 3.6 | June 2026 | Jose | Resolved OQ-8 and OQ-9 — production colors adopted as standard (`#67E8F9` cyan, `#09090F` background). Design system token table updated. All open questions are now resolved. Pre-Beta Fix List is 100% complete. App is beta-ready. |
 | PRD 3.5 | June 2026 | Jose | Closed all Pre-Beta Fix List items — Priority 1 (genre filter, save persistence, audio preview, filter drawer), Priority 2 (search debounce), Priority 3 (token hygiene), and Priority 4 (dev routes, lazy images, share button, profile stubs) are all shipped. Only open items remaining are OQ-8 and OQ-9 (color token decisions). App is functionally beta-ready. |
 | PRD 3.4 | June 2026 | Jose | Closed Pre-Beta Priority 2 (modal conversion shipped — card tap opens centered modal overlay); resolved OQ-7 (inline map via OpenStreetMap + CartoDB dark tiles); updated M3 production status note to reflect modal is live; updated M6 description to reflect ProfilePage now derives stats and top genres from Favorites data; checked off M2 map acceptance criterion |

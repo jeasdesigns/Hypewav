@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router';
+import { Sparkles } from 'lucide-react';
 import { Show } from '../data/mockData';
 
 interface FeaturedCarouselProps {
@@ -19,6 +19,70 @@ const SLOT_CONFIG = [
   { offset:  1, x:  435, scale: 0.80, opacity: 0.65, z: 1 },
   { offset:  2, x:  760, scale: 0.58, opacity: 0.25, z: 0 },
 ];
+
+const MAX_DOTS = 5;
+
+function DotsIndicator({ total, activeIndex, onGoTo }: {
+  total: number;
+  activeIndex: number;
+  onGoTo: (i: number) => void;
+}) {
+  if (total <= 1) return null;
+
+  if (total <= MAX_DOTS) {
+    return (
+      <div className="flex items-center justify-center gap-2">
+        {Array.from({ length: total }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => onGoTo(i)}
+            aria-label={`Go to show ${i + 1}`}
+            className={`rounded-full transition-all duration-300 ${
+              i === activeIndex
+                ? 'w-5 h-2 bg-hype-violet'
+                : 'w-2 h-2 bg-hype-text-secondary/40 hover:bg-hype-text-secondary/60'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Windowed: always show MAX_DOTS dots centered on the active index
+  const half = Math.floor(MAX_DOTS / 2);
+  let windowStart = activeIndex - half;
+  windowStart = Math.max(0, Math.min(windowStart, total - MAX_DOTS));
+  const windowEnd = windowStart + MAX_DOTS - 1;
+
+  return (
+    <div className="flex items-center justify-center gap-2">
+      {Array.from({ length: MAX_DOTS }).map((_, slot) => {
+        const i = windowStart + slot;
+        const isActive = i === activeIndex;
+        const isEdge = slot === 0 || slot === MAX_DOTS - 1;
+        const canGoFurther = (slot === 0 && windowStart > 0) || (slot === MAX_DOTS - 1 && windowEnd < total - 1);
+
+        return (
+          <button
+            key={i}
+            onClick={() => onGoTo(i)}
+            aria-label={`Go to show ${i + 1} of ${total}`}
+            className={`rounded-full transition-all duration-300 ${
+              isActive
+                ? 'w-5 h-2 bg-hype-violet'
+                : isEdge && canGoFurther
+                ? 'w-1.5 h-1.5 bg-hype-text-secondary/25 hover:bg-hype-text-secondary/50'
+                : 'w-2 h-2 bg-hype-text-secondary/40 hover:bg-hype-text-secondary/60'
+            }`}
+          />
+        );
+      })}
+      <span className="ml-2 text-xs text-hype-text-secondary/50 tabular-nums">
+        {activeIndex + 1} / {total}
+      </span>
+    </div>
+  );
+}
 
 function CarouselCard({ show, isCenter, onSelect }: { show: Show; isCenter: boolean; onSelect?: (show: Show) => void }) {
   const date = new Date(show.date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -75,14 +139,14 @@ function CarouselCard({ show, isCenter, onSelect }: { show: Show; isCenter: bool
   }
 
   return (
-    <Link
-      to={`/show/${show.id}`}
+    <a
+      href={`/show/${show.id}`}
       className={sharedClass}
       tabIndex={isCenter ? 0 : -1}
       style={{ pointerEvents: isCenter ? 'auto' : 'none' }}
     >
       {inner}
-    </Link>
+    </a>
   );
 }
 
@@ -116,6 +180,13 @@ export function FeaturedCarousel({ shows, onSelect }: FeaturedCarouselProps) {
 
   return (
     <div className="hidden lg:block w-full mb-10">
+      {/* Section header */}
+      <div className="flex items-center gap-2 mb-5 px-1">
+        <Sparkles className="w-4 h-4 text-hype-violet" />
+        <h2 className="text-sm font-semibold text-hype-text-secondary uppercase tracking-widest">Featured</h2>
+      </div>
+
+      {/* Cards */}
       <div
         className="relative h-[260px] flex items-center justify-center overflow-hidden"
         onMouseEnter={() => setPaused(true)}
@@ -142,19 +213,9 @@ export function FeaturedCarousel({ shows, onSelect }: FeaturedCarouselProps) {
         })}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-4">
-        {shows.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={`rounded-full transition-all duration-300 ${
-              i === activeIndex
-                ? 'w-5 h-2 bg-hype-violet'
-                : 'w-2 h-2 bg-hype-text-secondary/40 hover:bg-hype-text-secondary/70'
-            }`}
-            aria-label={`Go to show ${i + 1}`}
-          />
-        ))}
+      {/* Windowed dots + position counter */}
+      <div className="mt-5">
+        <DotsIndicator total={total} activeIndex={activeIndex} onGoTo={goTo} />
       </div>
     </div>
   );
