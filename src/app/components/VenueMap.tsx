@@ -67,7 +67,7 @@ export function VenueMap({ address, venueName, googleMapsUrl }: VenueMapProps) {
         href={googleMapsUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-center h-36 rounded-lg bg-hype-bg-primary border border-hype-bg-secondary hover:border-hype-cyan/50 transition-colors group"
+        className="flex items-center justify-center h-52 rounded-lg bg-hype-bg-primary border border-hype-bg-secondary hover:border-hype-cyan/50 transition-colors group"
       >
         <div className="flex flex-col items-center gap-2">
           <MapPin className="w-7 h-7 text-hype-cyan opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -79,7 +79,7 @@ export function VenueMap({ address, venueName, googleMapsUrl }: VenueMapProps) {
 
   if (!coords) {
     return (
-      <div className="h-36 rounded-lg bg-hype-bg-secondary animate-pulse flex items-center justify-center">
+      <div className="h-52 rounded-lg bg-hype-bg-secondary animate-pulse flex items-center justify-center">
         <MapPin className="w-6 h-6 text-hype-text-secondary opacity-40" />
       </div>
     );
@@ -90,7 +90,7 @@ export function VenueMap({ address, venueName, googleMapsUrl }: VenueMapProps) {
       href={googleMapsUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block relative h-44 rounded-lg overflow-hidden group ring-1 ring-white/5 hover:ring-hype-cyan/30 transition-all"
+      className="block relative h-64 rounded-lg overflow-hidden group ring-1 ring-white/5 hover:ring-hype-cyan/30 transition-all"
       aria-label={`Open ${venueName} in Google Maps`}
     >
       <MapContainer
